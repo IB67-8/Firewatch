@@ -44,6 +44,8 @@
   --status-warning:  #fab219;
   --status-serious:  #ec835a;
   --status-critical: #d03b3b;
+  --news: #6d4fd8;            /* fire news & agency-reported incidents */
+  --air:  #0b7f8a;            /* firefighting aircraft */
   --delta-good:      #006300;
 
   --r: 10px;   /* corner radius */
@@ -61,6 +63,7 @@
     --border: rgba(255,255,255,0.10); --border-strong: rgba(255,255,255,0.20);
     --shadow: 0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.4);
     --series-1: #3987e5; --series-2: #d95926;
+  --news: #a594f9; --air: #35c2cc;
     --frp-1: #a03e12; --frp-2: #c9541a; --frp-3: #ea7127;
     --frp-4: #f39355; --frp-5: #f9b585; --frp-6: #fdd8b6;
     --delta-good: #0ca30c;
@@ -75,6 +78,7 @@
   --border: rgba(255,255,255,0.10); --border-strong: rgba(255,255,255,0.20);
   --shadow: 0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.4);
   --series-1: #3987e5; --series-2: #d95926;
+  --news: #a594f9; --air: #35c2cc;
   --frp-1: #a03e12; --frp-2: #c9541a; --frp-3: #ea7127;
   --frp-4: #f39355; --frp-5: #f9b585; --frp-6: #fdd8b6;
   --delta-good: #0ca30c;
@@ -241,6 +245,49 @@ header.top {
 #tip dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0; }
 #tip dt { color: var(--text-muted); }
 #tip dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
+/* ---------- context layers: news, incidents, aircraft ---------- */
+#tip .tipsrc { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--grid); color: var(--text-muted); font-size: 11px; }
+#tip ul.tipnews { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+#tip ul.tipnews li { line-height: 1.35; }
+#tip ul.tipnews span { display: block; color: var(--text-muted); font-size: 11px; }
+.chip.news   { background: var(--news); color: #fff; }
+.chip.agency { background: transparent; color: var(--news); border: 1.5px solid var(--news); }
+.chip.air    { background: var(--air); color: #fff; }
+.maplegend .lyr { cursor: pointer; user-select: none; }
+.maplegend .lyr input { width: 13px; height: 13px; margin: 0; accent-color: var(--text-primary); }
+.sym { display: inline-block; flex: none; }
+.sym-news { width: 9px; height: 9px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--news); }
+.sym-inc  { width: 8px; height: 8px; transform: rotate(45deg); background: var(--news); }
+.sym-air  { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent;
+            border-bottom: 10px solid var(--air); }
+.seg { flex-wrap: wrap; }
+.nsec { padding: 8px 14px 4px; font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .05em;
+        color: var(--text-muted); border-bottom: 1px solid var(--grid); background: var(--surface-1); position: sticky; top: 0; z-index: 1; }
+.nhead { padding: 9px 14px; font-size: 12px; color: var(--text-secondary); border-bottom: 1px solid var(--grid); }
+.nrow { padding: 9px 14px; border-bottom: 1px solid var(--grid); display: grid; gap: 5px; cursor: pointer; }
+.nrow:last-child { border-bottom: 0; }
+.nrow:hover { background: var(--surface-3); }
+.nrow.sel { background: var(--surface-3); box-shadow: inset 3px 0 0 var(--news); }
+#airList .nrow.sel { box-shadow: inset 3px 0 0 var(--air); }
+.nrow .r1 { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.nrow .ttl { font-weight: 600; font-size: 13px; line-height: 1.35; color: var(--text-primary); text-decoration: none; }
+.nrow a.ttl:hover { text-decoration: underline; }
+.nrow .r1 .muted { margin-left: auto; white-space: nowrap; }
+.nrow .r2 { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary);
+            font-variant-numeric: tabular-nums; }
+.nrow .r2 a { color: var(--text-secondary); }
+.muted { color: var(--text-muted); }
+.linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--news); cursor: pointer; text-decoration: underline;
+           text-underline-offset: 2px; }
+#airList .linkbtn { color: var(--air); }
+.srcchip.off .dot { background: var(--text-muted); }
+/* On a phone the legend was covering a third of the globe. Keep the ramp, the
+   sensor shapes and the two layer switches; drop the explanatory rows. */
+@media (max-width: 560px) {
+  .maplegend { padding: 7px 9px; max-width: 190px; font-size: 10.5px; }
+  .maplegend > .row:not(.lyr), .maplegend .shapekey span[style*="flex-basis"] { display: none; }
+  .maplegend .lyr { margin-top: 4px; }
+}
 
 /* ---------- alert feed ---------- */
 .side { display: flex; flex-direction: column; gap: 12px; min-width: 0;
@@ -567,6 +614,7 @@ header.top { padding: 10px; gap: 8px; }
     <div class="mapwrap">
       <canvas id="map" role="img" aria-label="World map of satellite thermal hot spot detections"></canvas>
       <div class="mapctl">
+        <button id="zGlobe" title="Globe view" aria-label="Switch to globe view" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3.5 9h17M3.5 15h17"/></svg></button>
         <button id="zIn"  title="Zoom in"  aria-label="Zoom in">+</button>
         <button id="zOut" title="Zoom out" aria-label="Zoom out">−</button>
         <button id="zFit" title="Fit to detections" aria-label="Fit to detections">⤢</button>
@@ -580,6 +628,8 @@ header.top { padding: 10px; gap: 8px; }
         </div>
         <div class="shapekey" id="shapeKey"></div>
         <div class="row"><span style="width:10px;height:10px;border-radius:50%;border:2px solid var(--status-critical);display:inline-block"></span> new since last poll</div>
+        <label class="row lyr"><input type="checkbox" id="lyrNews" checked><span class="sym sym-inc" aria-hidden="true"></span><span class="sym sym-news" aria-hidden="true"></span>fire news &amp; reported incidents</label>
+        <label class="row lyr"><input type="checkbox" id="lyrAir" checked><span class="sym sym-air" aria-hidden="true"></span>firefighting aircraft</label>
         <div class="row" id="perimKey" hidden><span style="width:12px;height:8px;border:1.5px dashed var(--text-secondary);display:inline-block"></span> burnt area (EFFIS)</div>
       </div>
       <div id="mapCoord" aria-hidden="true"></div>
@@ -602,6 +652,8 @@ header.top { padding: 10px; gap: 8px; }
         <div class="seg" role="tablist" aria-label="Side panel">
           <button id="tabRisk" role="tab" aria-pressed="true" aria-controls="risk">Places at risk</button>
           <button id="tabInc" role="tab" aria-pressed="false" aria-controls="incidents">Fires</button>
+          <button id="tabNews" role="tab" aria-pressed="false" aria-controls="newsList">News</button>
+          <button id="tabAir" role="tab" aria-pressed="false" aria-controls="airList">Aircraft</button>
         </div>
         <span class="note" id="sideNote"></span>
       </div>
@@ -610,6 +662,12 @@ header.top { padding: 10px; gap: 8px; }
       </div>
       <div class="feed" id="incidents" role="listbox" aria-label="Detected fire clusters" hidden>
         <div class="empty">No clusters yet.</div>
+      </div>
+      <div class="feed" id="newsList" role="list" aria-label="Fire news and reported incidents" hidden>
+        <div class="empty">Loading fire news…</div>
+      </div>
+      <div class="feed" id="airList" role="list" aria-label="Firefighting aircraft" hidden>
+        <div class="empty">Looking for firefighting aircraft…</div>
       </div>
     </section>
   </div>
@@ -677,7 +735,7 @@ header.top { padding: 10px; gap: 8px; }
     Official Croatian fire information: <a href="https://www.hvz.gov.hr/" target="_blank" rel="noopener">Hrvatska vatrogasna zajednica</a> ·
     <a href="https://meteo.hr/" target="_blank" rel="noopener">DHMZ</a> fire-danger forecast ·
     <a href="https://forest-fire.emergency.copernicus.eu/apps/effis_current_situation/" target="_blank" rel="noopener">EFFIS current situation</a>.</div>
-  <div><b style="color:var(--text-secondary)">Sources.</b> NASA FIRMS (VIIRS 375 m S-NPP / NOAA-20 / NOAA-21, MODIS 1 km) · NOAA GOES-East &amp; GOES-West ABI Level-2 Fire/Hot-Spot Characterization · EFFIS / GWIS (Copernicus EMS) hot spots, burnt-area perimeters and Fire Weather Index · Copernicus Sentinel-2 via the Copernicus Browser · Open-Meteo soil &amp; air temperature. Times are UTC, with Croatian local time alongside.</div>
+  <div><b style="color:var(--text-secondary)">Sources.</b> NASA FIRMS (VIIRS 375 m S-NPP / NOAA-20 / NOAA-21, MODIS 1 km) · NOAA GOES-East &amp; GOES-West ABI Level-2 Fire/Hot-Spot Characterization · EFFIS / GWIS (Copernicus EMS) hot spots, burnt-area perimeters and Fire Weather Index · Copernicus Sentinel-2 via the Copernicus Browser · Open-Meteo soil &amp; air temperature · NASA EONET reported incidents · GDELT Project fire news · FlyItalyADSB flight data (CC BY-SA 4.0) · d3-geo for the globe. Times are UTC, with Croatian local time alongside.</div>
   <div><b style="color:var(--text-secondary)">Read this before you rely on it.</b> Satellite hot spots are <em>candidate</em> thermal anomalies, not confirmed fires — gas flares, volcanoes, industrial heat and sun glint all trigger them, and cloud or smoke can hide a real fire completely. This is a situational-awareness tool, not a life-safety system. Call your local emergency number for anything urgent, and follow official agency guidance.</div>
 </footer>
 
@@ -703,6 +761,10 @@ header.top { padding: 10px; gap: 8px; }
       <option value="2">High confidence only</option>
       <option value="3">High confidence, ≥ 25 MW</option>
     </select>
+    <label for="kAdsb">Aircraft tracking key <span style="text-transform:none;font-weight:400">— free at flyitalyadsb.com, no approval step</span></label>
+    <input type="text" id="kAdsb" placeholder="paste your FlyItalyADSB API key" autocomplete="off" spellcheck="false">
+    <label style="text-transform:none;font-weight:400;margin-top:6px"><input type="checkbox" id="kAdsbRemember" style="width:auto;vertical-align:-2px;margin-right:6px">Remember this key on this device</label>
+    <p style="margin-top:6px;font-size:12px">Tracks Canadair water bombers, Air-Cranes, Fire Boss and large air tankers live from their ADS-B transponders. The keyless flight feeds checked do not accept calls from a web page, so this layer needs a key. It is sent only to FlyItalyADSB, and kept in this browser only if you tick the box. Flight data: FlyItalyADSB, CC BY-SA 4.0.</p>
     <label><input type="checkbox" id="kWatchOnly" style="width:auto;vertical-align:-2px;margin-right:6px">Only alert inside the current region</label>
   </div>
   <div class="actions">
@@ -4451,6 +4513,7 @@ function palette() {
     land: cssv('--land'), edge: cssv('--land-edge'),
     grid: cssv('--grid'), muted: cssv('--text-muted'), secondary: cssv('--text-secondary'),
     series1: cssv('--series-1'), critical: cssv('--status-critical'),
+    news: cssv('--news'), air: cssv('--air'),
     frp: [1, 2, 3, 4, 5, 6].map(i => cssv('--frp-' + i))
   });
 }
@@ -4475,6 +4538,15 @@ const SOURCES = {
    continental north. The neighbours are included because smoke, wind and fire
    crews all cross these borders. */
 const REGIONS = [
+  { id: 'world',   name: 'World',                     bbox: [-180, -90, 180, 90] },
+  { id: 'namer',   name: 'North America',             bbox: [-170, 14, -52, 72] },
+  { id: 'conus',   name: 'United States (CONUS)',     bbox: [-125, 24, -66, 50] },
+  { id: 'calif',   name: 'California & Great Basin',  bbox: [-125, 32, -110, 43] },
+  { id: 'canada',  name: 'Canada & Alaska',           bbox: [-170, 48, -52, 72] },
+  { id: 'samer',   name: 'South America',             bbox: [-82, -56, -34, 13] },
+  { id: 'amazon',  name: 'Amazon Basin',              bbox: [-75, -18, -44, 5] },
+  { id: 'europe',  name: 'Europe',                    bbox: [-11, 34, 42, 62] },
+  { id: 'medit',   name: 'Mediterranean',             bbox: [-10, 30, 40, 47] },
   { id: 'hr',      name: 'Croatia',                   bbox: [13.4, 42.3, 19.5, 46.6] },
   { id: 'hr-dalm', name: '  Dalmatia & islands',      bbox: [15.0, 42.3, 18.6, 44.6] },
   { id: 'hr-split',name: '  Split & central coast',   bbox: [15.8, 42.9, 17.5, 43.9] },
@@ -4485,15 +4557,6 @@ const REGIONS = [
   { id: 'hr-slav', name: '  Slavonia & the north',    bbox: [15.8, 44.8, 19.5, 46.6] },
   { id: 'adria',   name: 'Adriatic & neighbours',     bbox: [12.2, 41.0, 21.5, 47.2] },
   { id: 'balkans', name: 'Western Balkans',           bbox: [12.5, 39.5, 23.5, 47.5] },
-  { id: 'world',   name: 'World',                     bbox: [-180, -90, 180, 90] },
-  { id: 'namer',   name: 'North America',             bbox: [-170, 14, -52, 72] },
-  { id: 'conus',   name: 'United States (CONUS)',     bbox: [-125, 24, -66, 50] },
-  { id: 'calif',   name: 'California & Great Basin',  bbox: [-125, 32, -110, 43] },
-  { id: 'canada',  name: 'Canada & Alaska',           bbox: [-170, 48, -52, 72] },
-  { id: 'samer',   name: 'South America',             bbox: [-82, -56, -34, 13] },
-  { id: 'amazon',  name: 'Amazon Basin',              bbox: [-75, -18, -44, 5] },
-  { id: 'europe',  name: 'Europe',                    bbox: [-11, 34, 42, 62] },
-  { id: 'medit',   name: 'Mediterranean',             bbox: [-10, 30, 40, 47] },
   { id: 'africa',  name: 'Africa',                    bbox: [-19, -35, 52, 38] },
   { id: 'russia',  name: 'Siberia & Russian Far East',bbox: [60, 48, 180, 73] },
   { id: 'seasia',  name: 'Southeast Asia',            bbox: [92, -11, 142, 24] },
@@ -4522,8 +4585,12 @@ const S = {
   nextPoll: 0,
   polling: false,
   cycle: 0,
-  filters: { region: 'hr', bbox: [13.4, 42.3, 19.5, 46.6], source: 'all', conf: 1, age: 24, frp: 0, radius: 15 },
-  cfg: { firmsKey: '', interval: 300, thresh: 1, watchOnly: false, alerts: false, alertsAsked: false },
+  // Opens on the whole world; Croatia and every other region are one pick away.
+  // The radius matches the control's default: 15 km here, with no 15 km option
+  // in the picker, meant the control showed a value that was not in force.
+  filters: { region: 'world', bbox: [-180, -90, 180, 90], source: 'all', conf: 1, age: 24, frp: 0, radius: 25 },
+  cfg: { firmsKey: '', interval: 300, thresh: 1, watchOnly: false, alerts: false, alertsAsked: false,
+         adsbKey: '', adsbRemember: false },
   risk: [],                  // populated places inside the danger radius
   perimeters: [],            // EFFIS burnt-area polygons
   perimAt: 0,
@@ -5201,8 +5268,8 @@ function mulberry(seed) {
   };
 }
 /* Real fire-prone landscapes so the simulation is spatially plausible. The
-   Croatian entries come first and carry the most weight, because the default
-   view is Croatia and a demo that opens on an empty Adriatic teaches nothing.
+   Croatian entries come first and carry the most weight: a demo that, zoomed
+   into the Adriatic, shows an empty coast teaches nothing.
    These are the places that actually burn: the karst behind the Dalmatian
    coast, the islands, the Ravni Kotari, and the Slavonian plain in summer. */
 const DEMO_SEEDS = [
@@ -5393,7 +5460,7 @@ const baseCtx = baseCv.getContext('2d');
 const geomCv = document.createElement('canvas');
 const geomCtx = geomCv.getContext('2d');
 let geomKey = '';
-const V = { lon0: 12, lat0: 22, k: 0, W: 0, H: 0, dpr: 1 };
+const V = { lon0: 12, lat0: 22, k: 0, W: 0, H: 0, dpr: 1, proj: 'flat' };   // proj: 'flat' | 'globe'
 let HIT = [];                    // {x,y,d,r} in CSS pixels, rebuilt with the base layer
 let dragBox = null;              // shift-drag selection in progress
 let baseDirty = true;
@@ -5502,6 +5569,13 @@ const unx = x => V.lon0 + (x - V.W / 2) / V.k;
 const uny = y => V.lat0 - (y - V.H / 2) / V.k;
 
 function clampView() {
+  if (V.proj === 'globe') {
+    V.k = clamp(V.k, globeMinK(), 30000);
+    V.lat0 = clamp(V.lat0, -89.5, 89.5);
+    V.lon0 = ((V.lon0 + 180) % 360 + 360) % 360 - 180;
+    invalidateBase();
+    return;
+  }
   const minK = V.W / 360;
   V.k = clamp(V.k, minK, 30000);
   const halfLat = V.H / 2 / V.k;
@@ -5520,6 +5594,7 @@ function fitBox(b, pad) {
 
 /* Only the world copies that actually intersect the viewport. */
 function worldOffsets() {
+  if (V.proj === 'globe') return [0];          // one sphere, no copies
   const span = 360 * V.k, left = px(-180), right = px(180);
   const out = [];
   for (let n = -2; n <= 2; n++) {
@@ -5683,7 +5758,1244 @@ function blitDots(g, dots, col) {
   }
 }
 
-function paintGeom() {
+/* ---- d3-geo 3.1.1 + d3-array 3.2.4, tree-shaken to the four functions the globe
+   uses (geoOrthographic, geoPath, geoGraticule, geoArea). Inlined so the page
+   stays one self-contained file that works offline. Licences follow. ----
+
+Copyright 2010-2024 Mike Bostock
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+
+This license applies to GeographicLib, versions 1.12 and later.
+
+Copyright 2008-2012 Charles Karney
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Copyright 2010-2023 Mike Bostock
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+*/
+var D3G=(()=>{var Qt=Object.defineProperty;var vr=Object.getOwnPropertyDescriptor;var xr=Object.getOwnPropertyNames;var Sr=Object.prototype.hasOwnProperty;var Er=(t,n)=>{for(var e in n)Qt(t,e,{get:n[e],enumerable:!0})},wr=(t,n,e,r)=>{if(n&&typeof n=="object"||typeof n=="function")for(let o of xr(n))!Sr.call(t,o)&&o!==e&&Qt(t,o,{get:()=>n[o],enumerable:!(r=vr(n,o))||r.enumerable});return t};var Rr=t=>wr(Qt({},"__esModule",{value:!0}),t);var jr={};Er(jr,{geoArea:()=>nn,geoGraticule:()=>Ot,geoOrthographic:()=>An,geoPath:()=>En});var O=class{constructor(){this._partials=new Float64Array(32),this._n=0}add(n){let e=this._partials,r=0;for(let o=0;o<this._n&&o<32;o++){let a=e[o],f=n+a,u=Math.abs(n)<Math.abs(a)?n-(f-a):a-(f-n);u&&(e[r++]=u),n=f}return e[r]=n,this._n=r+1,this}valueOf(){let n=this._partials,e=this._n,r,o,a,f=0;if(e>0){for(f=n[--e];e>0&&(r=f,o=n[--e],f=r+o,a=o-(f-r),!a););e>0&&(a<0&&n[e-1]<0||a>0&&n[e-1]>0)&&(o=a*
+2,r=f+o,o==r-f&&(f=r))}return f}};function*Mr(t){for(let n of t)yield*n}function ft(t){return Array.from(Mr(t))}function et(t,n,e){t=+t,n=+n,e=(o=arguments.length)<2?(n=t,t=0,1):o<3?1:+e;for(var r=-1,o=Math.max(0,Math.ceil((n-t)/e))|0,a=new Array(o);++r<o;)a[r]=t+r*e;return a}var R=1e-6,In=1e-12,q=Math.PI,B=q/2,lt=q/4,X=q*2,Q=180/q,D=q/180,C=Math.abs,Nn=Math.atan,U=Math.atan2,A=Math.cos,vt=Math.ceil;var I=Math.sin,Cn=Math.sign||function(t){return t>0?1:t<0?-1:0},H=Math.sqrt;function zn(t){return t>1?0:t<-1?q:Math.acos(t)}function J(t){return t>1?B:t<-1?-B:Math.asin(t)}function F(){}function _t(t,n){t&&_n.hasOwnProperty(t.type)&&_n[t.type](t,n)}var Ln={Feature:function(t,n){_t(t.geometry,n)},FeatureCollection:function(t,n){for(var e=t.features,r=-1,o=e.length;++r<o;)_t(e[r].geometry,n)}},_n={Sphere:function(t,n){n.sphere()},Point:function(t,n){t=t.coordinates,n.point(t[0],t[1],t[2])},MultiPoint:function(t,n){for(var e=t.coordinates,r=-1,o=e.length;++r<o;)t=e[r],n.point(t[0],t[1],
+t[2])},LineString:function(t,n){Vt(t.coordinates,n,0)},MultiLineString:function(t,n){for(var e=t.coordinates,r=-1,o=e.length;++r<o;)Vt(e[r],n,0)},Polygon:function(t,n){$n(t.coordinates,n)},MultiPolygon:function(t,n){for(var e=t.coordinates,r=-1,o=e.length;++r<o;)$n(e[r],n)},GeometryCollection:function(t,n){for(var e=t.geometries,r=-1,o=e.length;++r<o;)_t(e[r],n)}};function Vt(t,n,e){var r=-1,o=t.length-
+e,a;for(n.lineStart();++r<o;)a=t[r],n.point(a[0],a[1],a[2]);n.lineEnd()}function $n(t,n){var e=-1,r=t.length;for(n.polygonStart();++e<r;)Vt(t[e],n,1);n.polygonEnd()}function j(t,n){t&&Ln.hasOwnProperty(t.type)?Ln[t.type](t,n):_t(t,n)}var jt=new O,$t=new O,Tn,Dn,kt,bt,tn,xt={point:F,lineStart:F,lineEnd:F,polygonStart:function(){jt=new O,xt.lineStart=yr,xt.lineEnd=Pr},polygonEnd:function(){var t=+jt;$t.add(t<0?X+t:t),this.lineStart=this.lineEnd=this.point=F},sphere:function(){$t.add(X)}};function yr(){xt.point=qr}function Pr(){Fn(Tn,Dn)}function qr(t,n){xt.point=Fn,Tn=t,Dn=n,t*=D,n*=D,kt=t,bt=A(n=n/2+lt),tn=I(n)}function Fn(t,n){
+t*=D,n*=D,n=n/2+lt;var e=t-kt,r=e>=0?1:-1,o=r*e,a=A(n),f=I(n),u=tn*f,g=bt*a+u*A(o),h=u*r*I(o);jt.add(U(h,g)),kt=t,bt=a,tn=f}function nn(t){return $t=new O,j(t,xt),$t*2}function St(t){return[U(t[1],t[0]),J(t[2])]}function k(t){var n=t[0],e=t[1],r=A(e);return[r*A(n),r*I(n),I(e)]}function Et(t,n){return t[0]*n[0]+t[1]*n[1]+t[2]*n[2]}function pt(t,n){return[t[1]*n[2]-t[2]*n[1],t[2]*n[0]-t[0]*n[2],t[0]*n[1]-t[1]*n[0]]}function Tt(t,n){t[0]+=n[0],t[1]+=n[1],t[2]+=n[2]}function wt(t,n){return[t[0]*n,t[1]*n,t[2]*n]}function Rt(t){var n=H(t[0]*t[0]+t[1]*t[1]+t[2]*t[2]);t[0]/=
+n,t[1]/=n,t[2]/=n}function Mt(t,n){function e(r,o){return r=t(r,o),n(r[0],r[1])}return t.invert&&n.invert&&(e.invert=function(r,o){return r=n.invert(r,o),r&&t.invert(r[0],r[1])}),e}function rn(t,n){return C(t)>q&&(t-=Math.round(t/X)*X),[t,n]}rn.invert=rn;function On(t,n,e){return(t%=X)?n||e?Mt(Xn(t),Yn(n,e)):Xn(t):n||e?Yn(n,e):rn}function Gn(t){return function(n,e){return n+=t,C(n)>q&&(n-=Math.round(n/X)*X),[n,e]}}function Xn(t){var n=Gn(t);return n.invert=Gn(-t),n}function Yn(t,n){var e=A(t),r=I(t),o=A(n),a=I(n);function f(u,g){var h=A(g),i=A(u)*h,l=I(u)*h,p=I(g),m=p*e+i*r;
+return[U(l*o-m*a,i*e-p*r),J(m*o+l*a)]}return f.invert=function(u,g){var h=A(g),i=A(u)*h,l=I(u)*h,p=I(g),m=p*o-l*a;return[U(l*o+p*a,i*e+m*r),J(m*e-i*r)]},f}function Hn(t,n,e,r,o,a){if(e){var f=A(n),u=I(n),g=r*e;o==null?(o=n+r*X,a=n-g/2):(o=Bn(f,o),a=Bn(f,a),(r>0?o<a:o>a)&&(o+=r*X));for(var h,i=o;r>0?i>a:i<a;i-=g)h=St([f,-u*A(i),-u*I(i)]),t.point(h[0],h[1])}}function Bn(t,n){n=k(n),n[0]-=t,Rt(n);var e=zn(-n[1]);return((-n[2]<0?-e:e)+X-R)%X}function Dt(){var t=[],n;return{point:function(e,r,o){n.push([e,r,o])},lineStart:function(){t.push(n=[])},lineEnd:F,rejoin:function(){t.length>1&&t.push(t.pop().concat(t.shift()))},result:function(){var e=t;return t=[],n=null,e}}}function st(t,n){return C(t[0]-n[0])<R&&C(t[1]-n[1])<R}function Ft(t,n,e,r){this.x=t,this.z=n,this.o=e,this.e=r,this.v=!1,this.n=this.p=null}function Gt(t,n,e,r,o){var a=[],f=[],u,g;if(t.forEach(function(c){if(!((w=c.length-1)<=0)){var w,v=c[0],x=c[w],E;if(st(v,x)){if(!v[2]&&!x[2]){for(o.lineStart(),u=0;u<w;++u)o.point((v=c[u])[0],v[1]);o.lineEnd();return}x[0]+=2*R}a.push(E=new Ft(v,c,null,!0)),f.push(E.o=new Ft(v,null,E,!1)),a.push(E=new Ft(x,c,null,
+!1)),f.push(E.o=new Ft(x,null,E,!0))}}),!!a.length){for(f.sort(n),Zn(a),Zn(f),u=0,g=f.length;u<g;++u)f[u].e=e=!e;for(var h=a[0],i,l;;){for(var p=h,m=!0;p.v;)if((p=p.n)===h)return;i=p.z,o.lineStart();do{if(p.v=p.o.v=!0,p.e){if(m)for(u=0,g=i.length;u<g;++u)o.point((l=i[u])[0],l[1]);else r(p.x,p.n.x,1,o);p=p.n}else{if(m)for(i=p.p.z,u=i.length-1;u>=0;--u)o.point((l=i[u])[0],l[1]);else r(p.x,p.p.x,-1,o);
+p=p.p}p=p.o,i=p.z,m=!m}while(!p.v);o.lineEnd()}}}function Zn(t){if(n=t.length){for(var n,e=0,r=t[0],o;++e<n;)r.n=o=t[e],o.p=r,r=o;r.n=o=t[0],o.p=r}}function en(t){return C(t[0])<=q?t[0]:Cn(t[0])*((C(t[0])+q)%X-q)}function Wn(t,n){var e=en(n),r=n[1],o=I(r),a=[I(e),-A(e),0],f=0,u=0,g=new O;o===1?r=B+R:o===-1&&(r=-B-R);for(var h=0,i=t.length;h<i;++h)if(p=(l=t[h]).length)for(var l,p,m=l[p-1],c=en(m),w=m[1]/2+lt,v=I(w),x=A(w),E=0;E<p;++E,c=S,v=P,x=_,m=d){var d=l[E],S=en(d),y=d[1]/2+lt,P=I(y),_=A(y),z=S-c,L=z>=0?1:-1,T=L*z,M=T>q,Z=v*P;if(g.add(U(Z*
+L*I(T),x*_+Z*A(T))),f+=M?z+L*X:z,M^c>=e^S>=e){var G=pt(k(m),k(d));Rt(G);var $=pt(a,G);Rt($);var s=(M^z>=0?-1:1)*J($[2]);(r>s||r===s&&(G[0]||G[1]))&&(u+=M^z>=0?1:-1)}}return(f<-R||f<R&&g<-In)^u&1}function Xt(t,n,e,r){return function(o){var a=n(o),f=Dt(),u=n(f),g=!1,h,i,l,p={point:m,lineStart:w,lineEnd:v,polygonStart:function(){p.point=x,p.lineStart=E,p.lineEnd=d,i=[],h=[]},polygonEnd:function(){p.point=m,p.lineStart=w,p.lineEnd=v,i=ft(i);var S=Wn(h,r);i.length?(g||(o.polygonStart(),g=!0),Gt(i,Ir,S,e,o)):S&&(g||(o.polygonStart(),g=!0),o.lineStart(),e(null,null,1,o),o.lineEnd()),g&&(o.polygonEnd(),
+g=!1),i=h=null},sphere:function(){o.polygonStart(),o.lineStart(),e(null,null,1,o),o.lineEnd(),o.polygonEnd()}};function m(S,y){t(S,y)&&o.point(S,y)}function c(S,y){a.point(S,y)}function w(){p.point=c,a.lineStart()}function v(){p.point=m,a.lineEnd()}function x(S,y){l.push([S,y]),u.point(S,y)}function E(){u.lineStart(),l=[]}function d(){x(l[0][0],l[0][1]),u.lineEnd();var S=u.clean(),y=f.result(),P,_=y.
+length,z,L,T;if(l.pop(),h.push(l),l=null,!!_){if(S&1){if(L=y[0],(z=L.length-1)>0){for(g||(o.polygonStart(),g=!0),o.lineStart(),P=0;P<z;++P)o.point((T=L[P])[0],T[1]);o.lineEnd()}return}_>1&&S&2&&y.push(y.pop().concat(y.shift())),i.push(y.filter(Ar))}}return p}}function Ar(t){return t.length>1}function Ir(t,n){return((t=t.x)[0]<0?t[1]-B-R:B-t[1])-((n=n.x)[0]<0?n[1]-B-R:B-n[1])}var on=Xt(function(){return!0},Nr,zr,[-q,-B]);function Nr(t){var n=NaN,e=NaN,r=NaN,o;return{lineStart:function(){t.lineStart(),o=1},point:function(a,f){var u=a>0?q:-q,g=C(a-n);C(g-q)<R?(t.point(n,e=(e+f)/2>0?B:-B),t.point(r,e),t.lineEnd(),t.lineStart(),t.point(u,e),t.point(a,e),o=0):r!==u&&g>=q&&(C(n-r)<R&&(n-=r*R),C(a-u)<R&&(a-=u*R),e=Cr(n,e,a,f),t.point(r,e),t.lineEnd(),t.lineStart(),t.point(u,e),
+o=0),t.point(n=a,e=f),r=u},lineEnd:function(){t.lineEnd(),n=e=NaN},clean:function(){return 2-o}}}function Cr(t,n,e,r){var o,a,f=I(t-e);return C(f)>R?Nn((I(n)*(a=A(r))*I(e)-I(r)*(o=A(n))*I(t))/(o*a*f)):(n+r)/2}function zr(t,n,e,r){var o;if(t==null)o=e*B,r.point(-q,o),r.point(0,o),r.point(q,o),r.point(q,0),r.point(q,-o),r.point(0,-o),r.point(-q,-o),r.point(-q,0),r.point(-q,o);else if(C(t[0]-n[0])>R){
+var a=t[0]<n[0]?q:-q;o=e*a/2,r.point(-a,o),r.point(0,o),r.point(a,o)}else r.point(n[0],n[1])}function Un(t){var n=A(t),e=2*D,r=n>0,o=C(n)>R;function a(i,l,p,m){Hn(m,t,e,p,i,l)}function f(i,l){return A(i)*A(l)>n}function u(i){var l,p,m,c,w;return{lineStart:function(){c=m=!1,w=1},point:function(v,x){var E=[v,x],d,S=f(v,x),y=r?S?0:h(v,x):S?h(v+(v<0?q:-q),x):0;if(!l&&(c=m=S)&&i.lineStart(),S!==m&&(d=g(l,E),(!d||st(l,d)||st(E,d))&&(E[2]=1)),S!==m)w=0,S?(i.lineStart(),d=g(E,l),i.point(d[0],d[1])):
+(d=g(l,E),i.point(d[0],d[1],2),i.lineEnd()),l=d;else if(o&&l&&r^S){var P;!(y&p)&&(P=g(E,l,!0))&&(w=0,r?(i.lineStart(),i.point(P[0][0],P[0][1]),i.point(P[1][0],P[1][1]),i.lineEnd()):(i.point(P[1][0],P[1][1]),i.lineEnd(),i.lineStart(),i.point(P[0][0],P[0][1],3)))}S&&(!l||!st(l,E))&&i.point(E[0],E[1]),l=E,m=S,p=y},lineEnd:function(){m&&i.lineEnd(),l=null},clean:function(){return w|(c&&m)<<1}}}function g(i,l,p){
+var m=k(i),c=k(l),w=[1,0,0],v=pt(m,c),x=Et(v,v),E=v[0],d=x-E*E;if(!d)return!p&&i;var S=n*x/d,y=-n*E/d,P=pt(w,v),_=wt(w,S),z=wt(v,y);Tt(_,z);var L=P,T=Et(_,L),M=Et(L,L),Z=T*T-M*(Et(_,_)-1);if(!(Z<0)){var G=H(Z),$=wt(L,(-T-G)/M);if(Tt($,_),$=St($),!p)return $;var s=i[0],N=l[0],Y=i[1],W=l[1],K;N<s&&(K=s,s=N,N=K);var gt=N-s,nt=C(gt-q)<R,it=nt||gt<R;if(!nt&&W<Y&&(K=Y,Y=W,W=K),it?nt?Y+W>0^$[1]<(C($[0]-s)<
+R?Y:W):Y<=$[1]&&$[1]<=W:gt>q^(s<=$[0]&&$[0]<=N)){var rt=wt(L,(-T+G)/M);return Tt(rt,_),[$,St(rt)]}}}function h(i,l){var p=r?t:q-t,m=0;return i<-p?m|=1:i>p&&(m|=2),l<-p?m|=4:l>p&&(m|=8),m}return Xt(f,u,a,r?[0,-t]:[-q,t-q])}function Jn(t,n,e,r,o,a){var f=t[0],u=t[1],g=n[0],h=n[1],i=0,l=1,p=g-f,m=h-u,c;if(c=e-f,!(!p&&c>0)){if(c/=p,p<0){if(c<i)return;c<l&&(l=c)}else if(p>0){if(c>l)return;c>i&&(i=c)}if(c=o-f,!(!p&&c<0)){if(c/=p,p<0){if(c>l)return;c>i&&(i=c)}else if(p>0){if(c<i)return;c<l&&(l=c)}if(c=r-u,!(!m&&c>0)){if(c/=m,m<0){if(c<i)return;c<l&&(l=c)}else if(m>0){if(c>l)return;c>i&&(i=c)}if(c=a-u,!(!m&&c<0)){if(c/=m,m<
+0){if(c>l)return;c>i&&(i=c)}else if(m>0){if(c<i)return;c<l&&(l=c)}return i>0&&(t[0]=f+i*p,t[1]=u+i*m),l<1&&(n[0]=f+l*p,n[1]=u+l*m),!0}}}}}var yt=1e9,Yt=-yt;function an(t,n,e,r){function o(h,i){return t<=h&&h<=e&&n<=i&&i<=r}function a(h,i,l,p){var m=0,c=0;if(h==null||(m=f(h,l))!==(c=f(i,l))||g(h,i)<0^l>0)do p.point(m===0||m===3?t:e,m>1?r:n);while((m=(m+l+4)%4)!==c);else p.point(i[0],i[1])}function f(h,i){return C(h[0]-t)<R?i>0?0:3:C(h[0]-e)<R?i>0?2:1:C(h[1]-n)<R?i>0?1:0:i>0?3:2}function u(h,i){return g(h.x,i.x)}function g(h,i){var l=f(
+h,1),p=f(i,1);return l!==p?l-p:l===0?i[1]-h[1]:l===1?h[0]-i[0]:l===2?h[1]-i[1]:i[0]-h[0]}return function(h){var i=h,l=Dt(),p,m,c,w,v,x,E,d,S,y,P,_={point:z,lineStart:Z,lineEnd:G,polygonStart:T,polygonEnd:M};function z(s,N){o(s,N)&&i.point(s,N)}function L(){for(var s=0,N=0,Y=m.length;N<Y;++N)for(var W=m[N],K=1,gt=W.length,nt=W[0],it,rt,Lt=nt[0],ut=nt[1];K<gt;++K)it=Lt,rt=ut,nt=W[K],Lt=nt[0],ut=nt[1],
+rt<=r?ut>r&&(Lt-it)*(r-rt)>(ut-rt)*(t-it)&&++s:ut<=r&&(Lt-it)*(r-rt)<(ut-rt)*(t-it)&&--s;return s}function T(){i=l,p=[],m=[],P=!0}function M(){var s=L(),N=P&&s,Y=(p=ft(p)).length;(N||Y)&&(h.polygonStart(),N&&(h.lineStart(),a(null,null,1,h),h.lineEnd()),Y&&Gt(p,u,s,a,h),h.polygonEnd()),i=h,p=m=c=null}function Z(){_.point=$,m&&m.push(c=[]),y=!0,S=!1,E=d=NaN}function G(){p&&($(w,v),x&&S&&l.rejoin(),p.
+push(l.result())),_.point=z,S&&i.lineEnd()}function $(s,N){var Y=o(s,N);if(m&&c.push([s,N]),y)w=s,v=N,x=Y,y=!1,Y&&(i.lineStart(),i.point(s,N));else if(Y&&S)i.point(s,N);else{var W=[E=Math.max(Yt,Math.min(yt,E)),d=Math.max(Yt,Math.min(yt,d))],K=[s=Math.max(Yt,Math.min(yt,s)),N=Math.max(Yt,Math.min(yt,N))];Jn(W,K,t,n,e,r)?(S||(i.lineStart(),i.point(W[0],W[1])),i.point(K[0],K[1]),Y||i.lineEnd(),P=!1):
+Y&&(i.lineStart(),i.point(s,N),P=!1)}E=s,d=N,S=Y}return _}}function Kn(t,n,e){var r=et(t,n-R,e).concat(n);return function(o){return r.map(function(a){return[o,a]})}}function Qn(t,n,e){var r=et(t,n-R,e).concat(n);return function(o){return r.map(function(a){return[a,o]})}}function Ot(){var t,n,e,r,o,a,f,u,g=10,h=g,i=90,l=360,p,m,c,w,v=2.5;function x(){return{type:"MultiLineString",coordinates:E()}}function E(){return et(vt(r/i)*i,e,i).map(c).concat(et(vt(u/
+l)*l,f,l).map(w)).concat(et(vt(n/g)*g,t,g).filter(function(d){return C(d%i)>R}).map(p)).concat(et(vt(a/h)*h,o,h).filter(function(d){return C(d%l)>R}).map(m))}return x.lines=function(){return E().map(function(d){return{type:"LineString",coordinates:d}})},x.outline=function(){return{type:"Polygon",coordinates:[c(r).concat(w(f).slice(1),c(e).reverse().slice(1),w(u).reverse().slice(1))]}},x.extent=function(d){
+return arguments.length?x.extentMajor(d).extentMinor(d):x.extentMinor()},x.extentMajor=function(d){return arguments.length?(r=+d[0][0],e=+d[1][0],u=+d[0][1],f=+d[1][1],r>e&&(d=r,r=e,e=d),u>f&&(d=u,u=f,f=d),x.precision(v)):[[r,u],[e,f]]},x.extentMinor=function(d){return arguments.length?(n=+d[0][0],t=+d[1][0],a=+d[0][1],o=+d[1][1],n>t&&(d=n,n=t,t=d),a>o&&(d=a,a=o,o=d),x.precision(v)):[[n,a],[t,o]]},
+x.step=function(d){return arguments.length?x.stepMajor(d).stepMinor(d):x.stepMinor()},x.stepMajor=function(d){return arguments.length?(i=+d[0],l=+d[1],x):[i,l]},x.stepMinor=function(d){return arguments.length?(g=+d[0],h=+d[1],x):[g,h]},x.precision=function(d){return arguments.length?(v=+d,p=Kn(a,o,90),m=Qn(n,t,v),c=Kn(u,f,90),w=Qn(r,e,v),x):v},x.extentMajor([[-180,-90+R],[180,90-R]]).extentMinor([
+[-180,-80-R],[180,80+R]])}var Pt=t=>t;var un=new O,fn=new O,Vn,jn,ln,pn,ot={point:F,lineStart:F,lineEnd:F,polygonStart:function(){ot.lineStart=Lr,ot.lineEnd=$r},polygonEnd:function(){ot.lineStart=ot.lineEnd=ot.point=F,un.add(C(fn)),fn=new O},result:function(){var t=un/2;return un=new O,t}};function Lr(){ot.point=_r}function _r(t,n){ot.point=kn,Vn=ln=t,jn=pn=n}function kn(t,n){fn.add(pn*t-ln*n),ln=t,pn=n}function $r(){kn(Vn,jn)}var sn=ot;var ct=1/0,Bt=ct,qt=-ct,Ht=qt,Tr={point:Dr,lineStart:F,lineEnd:F,polygonStart:F,polygonEnd:F,result:function(){var t=[[ct,Bt],[qt,Ht]];return qt=Ht=-(Bt=ct=1/0),t}};function Dr(t,n){t<ct&&(ct=t),t>qt&&(qt=t),n<Bt&&(Bt=n),n>Ht&&(Ht=n)}var mt=Tr;var cn=0,mn=0,At=0,Zt=0,Wt=0,dt=0,dn=0,hn=0,It=0,nr,rr,b,tt,V={point:at,lineStart:bn,lineEnd:tr,polygonStart:function(){V.lineStart=Xr,V.lineEnd=Yr},polygonEnd:function(){V.point=at,V.lineStart=bn,V.lineEnd=tr},result:function(){var t=It?[dn/It,hn/It]:dt?[Zt/dt,Wt/dt]:At?[cn/At,mn/At]:[NaN,NaN];return cn=mn=At=Zt=Wt=dt=dn=hn=It=0,t}};function at(t,n){cn+=t,mn+=n,++At}function bn(){V.point=Fr}function Fr(t,n){
+V.point=Gr,at(b=t,tt=n)}function Gr(t,n){var e=t-b,r=n-tt,o=H(e*e+r*r);Zt+=o*(b+t)/2,Wt+=o*(tt+n)/2,dt+=o,at(b=t,tt=n)}function tr(){V.point=at}function Xr(){V.point=Or}function Yr(){er(nr,rr)}function Or(t,n){V.point=er,at(nr=b=t,rr=tt=n)}function er(t,n){var e=t-b,r=n-tt,o=H(e*e+r*r);Zt+=o*(b+t)/2,Wt+=o*(tt+n)/2,dt+=o,o=tt*t-b*n,dn+=o*(b+t),hn+=o*(tt+n),It+=o*3,at(b=t,tt=n)}var gn=V;function Ut(t){this._context=t}Ut.prototype={_radius:4.5,pointRadius:function(t){return this._radius=t,this},polygonStart:function(){this._line=0},polygonEnd:function(){this._line=NaN},lineStart:function(){this._point=0},lineEnd:function(){this._line===0&&this._context.closePath(),this._point=NaN},point:function(t,n){switch(this._point){case 0:{this._context.moveTo(t,n),this._point=1;break}case 1:{
+this._context.lineTo(t,n);break}default:{this._context.moveTo(t+this._radius,n),this._context.arc(t,n,this._radius,0,X);break}}},result:F};var xn=new O,vn,or,ir,Nt,Ct,Jt={point:F,lineStart:function(){Jt.point=Br},lineEnd:function(){vn&&ar(or,ir),Jt.point=F},polygonStart:function(){vn=!0},polygonEnd:function(){vn=null},result:function(){var t=+xn;return xn=new O,t}};function Br(t,n){Jt.point=ar,or=Nt=t,ir=Ct=n}function ar(t,n){Nt-=t,Ct-=n,xn.add(H(Nt*Nt+Ct*Ct)),Nt=t,Ct=n}var Sn=Jt;var ur,Kt,fr,lr,ht=class{constructor(n){this._append=n==null?pr:Hr(n),this._radius=4.5,this._=""}pointRadius(n){return this._radius=+n,this}polygonStart(){this._line=0}polygonEnd(){this._line=NaN}lineStart(){this._point=0}lineEnd(){this._line===0&&(this._+="Z"),this._point=NaN}point(n,e){switch(this._point){case 0:{this._append`M${n},${e}`,this._point=1;break}case 1:{this._append`L${n},${e}`;break}default:{
+if(this._append`M${n},${e}`,this._radius!==fr||this._append!==Kt){let r=this._radius,o=this._;this._="",this._append`m0,${r}a${r},${r} 0 1,1 0,${-2*r}a${r},${r} 0 1,1 0,${2*r}z`,fr=r,Kt=this._append,lr=this._,this._=o}this._+=lr;break}}}result(){let n=this._;return this._="",n.length?n:null}};function pr(t){let n=1;this._+=t[0];for(let e=t.length;n<e;++n)this._+=arguments[n]+t[n]}function Hr(t){let n=Math.
+floor(t);if(!(n>=0))throw new RangeError(`invalid digits: ${t}`);if(n>15)return pr;if(n!==ur){let e=10**n;ur=n,Kt=function(o){let a=1;this._+=o[0];for(let f=o.length;a<f;++a)this._+=Math.round(arguments[a]*e)/e+o[a]}}return Kt}function En(t,n){let e=3,r=4.5,o,a;function f(u){return u&&(typeof r=="function"&&a.pointRadius(+r.apply(this,arguments)),j(u,o(a))),a.result()}return f.area=function(u){return j(u,o(sn)),sn.result()},f.measure=function(u){return j(u,o(Sn)),Sn.result()},f.bounds=function(u){return j(u,o(mt)),mt.result()},f.centroid=function(u){return j(u,o(gn)),gn.result()},f.projection=function(u){return arguments.
+length?(o=u==null?(t=null,Pt):(t=u).stream,f):t},f.context=function(u){return arguments.length?(a=u==null?(n=null,new ht(e)):new Ut(n=u),typeof r!="function"&&a.pointRadius(r),f):n},f.pointRadius=function(u){return arguments.length?(r=typeof u=="function"?u:(a.pointRadius(+u),+u),f):r},f.digits=function(u){if(!arguments.length)return e;if(u==null)e=null;else{let g=Math.floor(u);if(!(g>=0))throw new RangeError(
+`invalid digits: ${u}`);e=g}return n===null&&(a=new ht(e)),f},f.projection(t).digits(e).context(n)}function zt(t){return function(n){var e=new wn;for(var r in t)e[r]=t[r];return e.stream=n,e}}function wn(){}wn.prototype={constructor:wn,point:function(t,n){this.stream.point(t,n)},sphere:function(){this.stream.sphere()},lineStart:function(){this.stream.lineStart()},lineEnd:function(){this.stream.lineEnd()},polygonStart:function(){this.stream.polygonStart()},polygonEnd:function(){this.stream.polygonEnd()}};function Rn(t,n,e){var r=t.clipExtent&&t.clipExtent();return t.scale(150).translate([0,0]),r!=null&&t.clipExtent(null),j(e,t.stream(mt)),n(mt.result()),r!=null&&t.clipExtent(r),t}function Mn(t,n,e){return Rn(t,function(r){var o=n[1][0]-n[0][0],a=n[1][1]-n[0][1],f=Math.min(o/(r[1][0]-r[0][0]),a/(r[1][1]-r[0][1])),u=+n[0][0]+(o-f*(r[1][0]+r[0][0]))/2,g=+n[0][1]+(a-f*(r[1][1]+r[0][1]))/2;t.scale(150*
+f).translate([u,g])},e)}function sr(t,n,e){return Mn(t,[[0,0],n],e)}function cr(t,n,e){return Rn(t,function(r){var o=+n,a=o/(r[1][0]-r[0][0]),f=(o-a*(r[1][0]+r[0][0]))/2,u=-a*r[0][1];t.scale(150*a).translate([f,u])},e)}function mr(t,n,e){return Rn(t,function(r){var o=+n,a=o/(r[1][1]-r[0][1]),f=-a*r[0][0],u=(o-a*(r[1][1]+r[0][1]))/2;t.scale(150*a).translate([f,u])},e)}var dr=16,Zr=A(30*D);function yn(t,n){return+n?Ur(t,n):Wr(t)}function Wr(t){return zt({point:function(n,e){n=t(n,e),this.stream.point(n[0],n[1])}})}function Ur(t,n){function e(r,o,a,f,u,g,h,i,l,p,m,c,w,v){var x=h-r,E=i-o,d=x*x+E*E;if(d>4*n&&w--){var S=f+p,y=u+m,P=g+c,_=H(S*S+y*y+P*P),z=J(P/=_),L=C(C(P)-1)<R||C(a-l)<R?(a+l)/2:U(y,S),T=t(L,z),M=T[0],Z=T[1],G=M-r,$=Z-o,s=E*G-x*$;(s*s/d>n||C((x*G+E*$)/
+d-.5)>.3||f*p+u*m+g*c<Zr)&&(e(r,o,a,f,u,g,M,Z,L,S/=_,y/=_,P,w,v),v.point(M,Z),e(M,Z,L,S,y,P,h,i,l,p,m,c,w,v))}}return function(r){var o,a,f,u,g,h,i,l,p,m,c,w,v={point:x,lineStart:E,lineEnd:S,polygonStart:function(){r.polygonStart(),v.lineStart=y},polygonEnd:function(){r.polygonEnd(),v.lineStart=E}};function x(z,L){z=t(z,L),r.point(z[0],z[1])}function E(){l=NaN,v.point=d,r.lineStart()}function d(z,L){
+var T=k([z,L]),M=t(z,L);e(l,p,i,m,c,w,l=M[0],p=M[1],i=z,m=T[0],c=T[1],w=T[2],dr,r),r.point(l,p)}function S(){v.point=x,r.lineEnd()}function y(){E(),v.point=P,v.lineEnd=_}function P(z,L){d(o=z,L),a=l,f=p,u=m,g=c,h=w,v.point=d}function _(){e(l,p,i,m,c,w,a,f,o,u,g,h,dr,r),v.lineEnd=S,S()}return v}}var Jr=zt({point:function(t,n){this.stream.point(t*D,n*D)}});function Kr(t){return zt({point:function(n,e){var r=t(n,e);return this.stream.point(r[0],r[1])}})}function Qr(t,n,e,r,o){function a(f,u){return f*=r,u*=o,[n+t*f,e-t*u]}return a.invert=function(f,u){return[(f-n)/t*r,(e-u)/t*o]},a}function hr(t,n,e,r,o,a){if(!a)return Qr(t,n,e,r,o);var f=A(a),u=I(a),g=f*t,h=u*t,i=f/t,l=u/t,p=(u*e-f*n)/t,m=(u*
+n+f*e)/t;function c(w,v){return w*=r,v*=o,[g*w-h*v+n,e-h*w-g*v]}return c.invert=function(w,v){return[r*(i*w-l*v+p),o*(m-l*w-i*v)]},c}function Pn(t){return Vr(function(){return t})()}function Vr(t){var n,e=150,r=480,o=250,a=0,f=0,u=0,g=0,h=0,i,l=0,p=1,m=1,c=null,w=on,v=null,x,E,d,S=Pt,y=.5,P,_,z,L,T;function M(s){return z(s[0]*D,s[1]*D)}function Z(s){return s=z.invert(s[0],s[1]),s&&[s[0]*Q,s[1]*Q]}
+M.stream=function(s){return L&&T===s?L:L=Jr(Kr(i)(w(P(S(T=s)))))},M.preclip=function(s){return arguments.length?(w=s,c=void 0,$()):w},M.postclip=function(s){return arguments.length?(S=s,v=x=E=d=null,$()):S},M.clipAngle=function(s){return arguments.length?(w=+s?Un(c=s*D):(c=null,on),$()):c*Q},M.clipExtent=function(s){return arguments.length?(S=s==null?(v=x=E=d=null,Pt):an(v=+s[0][0],x=+s[0][1],E=+s[1][0],
+d=+s[1][1]),$()):v==null?null:[[v,x],[E,d]]},M.scale=function(s){return arguments.length?(e=+s,G()):e},M.translate=function(s){return arguments.length?(r=+s[0],o=+s[1],G()):[r,o]},M.center=function(s){return arguments.length?(a=s[0]%360*D,f=s[1]%360*D,G()):[a*Q,f*Q]},M.rotate=function(s){return arguments.length?(u=s[0]%360*D,g=s[1]%360*D,h=s.length>2?s[2]%360*D:0,G()):[u*Q,g*Q,h*Q]},M.angle=function(s){
+return arguments.length?(l=s%360*D,G()):l*Q},M.reflectX=function(s){return arguments.length?(p=s?-1:1,G()):p<0},M.reflectY=function(s){return arguments.length?(m=s?-1:1,G()):m<0},M.precision=function(s){return arguments.length?(P=yn(_,y=s*s),$()):H(y)},M.fitExtent=function(s,N){return Mn(M,s,N)},M.fitSize=function(s,N){return sr(M,s,N)},M.fitWidth=function(s,N){return cr(M,s,N)},M.fitHeight=function(s,N){
+return mr(M,s,N)};function G(){var s=hr(e,0,0,p,m,l).apply(null,n(a,f)),N=hr(e,r-s[0],o-s[1],p,m,l);return i=On(u,g,h),_=Mt(n,N),z=Mt(i,_),P=yn(_,y),$()}function $(){return L=T=null,M}return function(){return n=t.apply(this,arguments),M.invert=n.invert&&Z,G()}}function gr(t){return function(n,e){var r=H(n*n+e*e),o=t(r),a=I(o),f=A(o);return[U(n*a,r*f),J(r&&e*a/r)]}}function qn(t,n){return[A(n)*I(t),I(n)]}qn.invert=gr(J);function An(){return Pn(qn).scale(249.5).clipAngle(90+R)}return Rr(jr);})();
+
+/* =====================================================================
+   Globe view — orthographic projection.
+
+   The flat map is plate carrée, where lat/lon to pixel is a multiply and a
+   pan is a translation. A globe is neither. Half of every coastline is on the
+   far side, and a coastline that wraps behind the horizon has to be closed
+   along the limb in the right direction, or its fill floods the whole disc.
+   That clipping is done by d3-geo (inlined, tree-shaken, ahead of this
+   module): it is the standard implementation of exactly this problem, and
+   getting it subtly wrong by hand is the classic way globes break.
+
+   Everything that is a point — hot pixels, labels, news pins, aircraft —
+   goes through pt() instead: a hand-written orthographic forward projection
+   that also reports which hemisphere the point is on. Points never need
+   clipping, only hiding, and pt() costs a few multiplies.
+   ===================================================================== */
+const DEG = Math.PI / 180;
+const PT = { x: 0, y: 0 };
+let _gLat = NaN, _gLon = NaN, _gs0 = 0, _gc0 = 1;
+function _gFrame() {
+  if (V.lat0 === _gLat && V.lon0 === _gLon) return;
+  _gLat = V.lat0; _gLon = V.lon0;
+  _gs0 = Math.sin(V.lat0 * DEG); _gc0 = Math.cos(V.lat0 * DEG);
+}
+const isGlobe = () => V.proj === 'globe';
+
+/* Project lon/lat into PT. Returns false for a point on the far side of the
+   globe. In flat mode it always succeeds; world copies stay the caller's job. */
+function pt(lon, lat) {
+  if (V.proj !== 'globe') { PT.x = px(lon); PT.y = py(lat); return true; }
+  _gFrame();
+  const R = V.k / DEG, la = lat * DEG, dl = (lon - V.lon0) * DEG;
+  const cl = Math.cos(la), sl = Math.sin(la), cd = Math.cos(dl);
+  PT.x = V.W / 2 + R * cl * Math.sin(dl);
+  PT.y = V.H / 2 - R * (_gc0 * sl - _gs0 * cl * cd);
+  return _gs0 * sl + _gc0 * cl * cd > 0;
+}
+
+/* Screen position back to [lon, lat]; null when the pointer is off the globe. */
+function unproj(x, y) {
+  const wrap = lon => ((lon + 180) % 360 + 360) % 360 - 180;
+  if (V.proj !== 'globe') return [wrap(unx(x)), clamp(uny(y), -90, 90)];
+  _gFrame();
+  const R = V.k / DEG, X = (x - V.W / 2) / R, Y = (V.H / 2 - y) / R;
+  const rho = Math.hypot(X, Y);
+  if (rho > 1) return null;
+  if (rho < 1e-12) return [wrap(V.lon0), V.lat0];
+  const c = Math.asin(rho), sc = Math.sin(c), cc = Math.cos(c);
+  const lat = Math.asin(clamp(cc * _gs0 + Y * sc * _gc0 / rho, -1, 1)) / DEG;
+  const lon = V.lon0 + Math.atan2(X * sc, rho * cc * _gc0 - Y * sc * _gs0) / DEG;
+  return [wrap(lon), lat];
+}
+
+/* The smallest scale at which the whole sphere still fits, with a margin. */
+const globeMinK = () => Math.min(V.W, V.H) * 0.43 * DEG;
+
+/* --------------------------------------------------------------------
+   Culling. A feature is skipped only when the *nearest* point of its
+   lon/lat box to the view centre is outside the visible cap — computed
+   exactly, so nothing that is on screen is ever dropped.
+   ----------------------------------------------------------------- */
+let _cullCos = 0;
+function globeCullSetup() {
+  _gFrame();
+  const d = Math.hypot(V.W / 2, V.H / 2) / (V.k / DEG);   // viewport half-diagonal, in radii
+  _cullCos = d >= 1 ? -0.02 : Math.cos(Math.min(Math.PI / 2, Math.asin(d) + 0.03));
+}
+function boxOnGlobe(b) {
+  const w = b[2] - b[0];
+  const la = b[1] * DEG, lb = b[3] * DEG, p0 = V.lat0 * DEG;
+  const off = ((V.lon0 - b[0]) % 360 + 360) % 360;
+  let best;
+  if (w >= 360 || off <= w) {
+    // The centre's meridian crosses the box: the nearest point is on it.
+    best = Math.cos(clamp(p0, la, lb) - p0);
+  } else {
+    // Otherwise it lies on one of the two bounding meridians. Along a
+    // meridian the cosine is A·sinφ + B·cosφ, maximised at atan2(A, B).
+    best = -2;
+    for (let e = 0; e < 2; e++) {
+      const B = _gc0 * Math.cos(((e ? b[2] : b[0]) - V.lon0) * DEG);
+      const ph = clamp(Math.atan2(_gs0, B), la, lb);
+      best = Math.max(best,
+        _gs0 * Math.sin(ph) + B * Math.cos(ph),
+        _gs0 * Math.sin(la) + B * Math.cos(la),
+        _gs0 * Math.sin(lb) + B * Math.cos(lb));
+    }
+  }
+  return best >= _cullCos;
+}
+
+/* The lon/lat window the screen covers. Null when the whole hemisphere is in
+   view, or — given maxDeg — when the view is wider than that. */
+function globeWindow(maxDeg) {
+  _gFrame();
+  const d = Math.hypot(V.W / 2, V.H / 2) / (V.k / DEG);
+  if (d >= 1) return null;
+  const c = Math.asin(d) / DEG + 1;
+  if (maxDeg != null && c > maxDeg) return null;
+  const la0 = Math.max(-90, V.lat0 - c), la1 = Math.min(90, V.lat0 + c);
+  let dl = 180;
+  if (la0 > -90 && la1 < 90) {
+    const s = Math.sin(c * DEG) / Math.cos(V.lat0 * DEG);
+    if (s < 1) dl = Math.asin(s) / DEG;
+  }
+  return [V.lon0 - dl, la0, V.lon0 + dl, la1];
+}
+
+/* --------------------------------------------------------------------
+   d3 plumbing. The packed Float arrays are streamed straight through the
+   projection into the canvas path — no GeoJSON, which for this map would
+   mean building 166 000 two-element arrays just to draw them.
+   ----------------------------------------------------------------- */
+let GPROJ = null;
+function globeProj() {
+  if (!GPROJ) GPROJ = D3G.geoOrthographic().clipAngle(90).precision(0);
+  return GPROJ.rotate([-V.lon0, -V.lat0]).scale(V.k / DEG).translate([V.W / 2, V.H / 2]);
+}
+let _sinkG = null, _sinkFirst = true, _sinkPoly = false;
+const GSINK = {
+  point(x, y) { if (_sinkFirst) { _sinkG.moveTo(x, y); _sinkFirst = false; } else _sinkG.lineTo(x, y); },
+  lineStart() { _sinkFirst = true; },
+  lineEnd() { if (_sinkPoly) _sinkG.closePath(); },
+  polygonStart() { _sinkPoly = true; },
+  polygonEnd() { _sinkPoly = false; },
+  sphere() {}
+};
+function globeStream(g) { _sinkG = g; return globeProj().stream(GSINK); }
+
+/* One ring, streamed as a polygon of its own. Holes are rings too, and the
+   even-odd fill cuts them out, exactly as it does on the flat map. d3 treats
+   rings as implicitly closed, so a duplicated closing vertex is dropped. */
+function streamRing(s, a, n, st, rev) {
+  let m = n;
+  if (n > 1 && a[0] === a[(n - 1) * 2] && a[1] === a[(n - 1) * 2 + 1]) m = n - 1;
+  if (m < 3) return;
+  if (m / st < 4) st = Math.max(1, Math.floor(m / 4));
+  s.polygonStart(); s.lineStart();
+  if (rev) for (let i = m - 1; i >= 0; i -= st) s.point(a[i * 2], a[i * 2 + 1]);
+  else for (let i = 0; i < m; i += st) s.point(a[i * 2], a[i * 2 + 1]);
+  s.lineEnd(); s.polygonEnd();
+}
+function streamLine(s, a, n, st) {
+  s.lineStart();
+  for (let i = 0; i < n - 1; i += st) s.point(a[i * 2], a[i * 2 + 1]);
+  s.point(a[(n - 1) * 2], a[(n - 1) * 2 + 1]);
+  s.lineEnd();
+}
+
+/* A lon/lat box as a closed ring, densified so its edges follow parallels
+   and meridians on the sphere instead of cutting across as great circles. */
+function boxRing(b, step) {
+  const out = [];
+  const seg = (x0, y0, x1, y1) => {
+    const n = Math.max(2, Math.ceil(Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) / step));
+    for (let i = 0; i < n; i++) out.push(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n);
+  };
+  seg(b[0], b[1], b[2], b[1]); seg(b[2], b[1], b[2], b[3]);
+  seg(b[2], b[3], b[0], b[3]); seg(b[0], b[3], b[0], b[1]);
+  return Float64Array.from(out);
+}
+
+/* --------------------------------------------------------------------
+   Winding. d3's spherical polygons are winding-sensitive: a ring wound the
+   "wrong" way means its complement — the whole sphere minus the island — and
+   it fills the globe. The map data came through two converters and three
+   sources, so orientation is tested once per ring, by area: anything larger
+   than a hemisphere is the wrong way round and is streamed reversed.
+   ----------------------------------------------------------------- */
+const GLOBE = { ready: false, land: null, lakes: null, focus: null, fbox: null, fboxRev: 0, grat: new Map() };
+function ringRev(a) {
+  const n = a.length / 2;
+  let m = n;
+  if (n > 1 && a[0] === a[(n - 1) * 2] && a[1] === a[(n - 1) * 2 + 1]) m = n - 1;
+  if (m < 3) return 0;
+  const c = new Array(m + 1);
+  for (let i = 0; i < m; i++) c[i] = [a[i * 2], a[i * 2 + 1]];
+  c[m] = c[0];
+  return D3G.geoArea({ type: 'Polygon', coordinates: [c] }) > 2 * Math.PI ? 1 : 0;
+}
+function ensureGlobeData() {
+  if (GLOBE.ready) return;
+  const t0 = performance.now();
+  GLOBE.land = LAND.polys.map(rings => Uint8Array.from(rings, r => ringRev(r)));
+  GLOBE.lakes = Uint8Array.from(LAND.lakes, r => ringRev(r));
+  GLOBE.focus = Uint8Array.from(LAND.focus, r => ringRev(r));
+  GLOBE.fbox = boxRing(LAND.focusExtent, 0.25);
+  GLOBE.fboxRev = ringRev(GLOBE.fbox);
+  GLOBE.flipped = GLOBE.land.reduce((a, r) => a + r.reduce((x, y) => x + y, 0), 0);
+  GLOBE.ms = +(performance.now() - t0).toFixed(1);
+  GLOBE.ready = true;
+}
+
+/* --------------------------------------------------------------------
+   Layer 0 on the globe. `fast` is the mid-gesture level of detail: rotation
+   is not an affine transform, so unlike the flat map there is no previous
+   frame to slide into place — each frame is drawn, and while the globe is
+   moving it draws only land, graticule and limb at a coarser stride.
+   ----------------------------------------------------------------- */
+function paintGeomGlobe(fast) {
+  ensureGlobeData();
+  const g = geomCtx, W = V.W, H = V.H, P = palette();
+  const R = V.k / DEG, cx = W / 2, cy = H / 2;
+  globeCullSetup();
+
+  g.fillStyle = P.surface1; g.fillRect(0, 0, W, H);          // space around the sphere
+  g.beginPath(); g.arc(cx, cy, R, 0, 2 * Math.PI);
+  g.fillStyle = P.surface3; g.fill();                         // ocean
+
+  const s = globeStream(g);
+  const tolPx = LAND.tolDeg * V.k;
+  let stride = clamp(Math.round(1.4 / Math.max(0.02, tolPx)), 1, 40);
+  if (fast) stride = Math.min(40, stride * 2);
+  const minSpan = (fast ? 3 : 1.5) / V.k, shapeSpan = 3 / V.k, minLake = 4 / V.k;
+  const minArc = (V.k > 60 ? 1.5 : 2.6) / V.k;
+  const dots = [];
+  g.lineJoin = V.k > 400 ? 'round' : 'bevel';
+
+  g.beginPath();
+  for (let pi = 0; pi < LAND.polys.length; pi++) {
+    const pb = LAND.polyBox[pi], bw = pb[2] - pb[0], bh = pb[3] - pb[1];
+    if (bw < minSpan && bh < minSpan) continue;
+    if (!boxOnGlobe(pb)) continue;
+    if (bw < shapeSpan && bh < shapeSpan) {
+      if (!fast && pt((pb[0] + pb[2]) / 2, (pb[1] + pb[3]) / 2)) dots.push(PT.x, PT.y, bw * V.k, bh * V.k);
+      continue;
+    }
+    const rings = LAND.polys[pi], rev = GLOBE.land[pi];
+    for (let ri = 0; ri < rings.length; ri++) {
+      const n = rings[ri].length / 2;
+      if (n >= 4) streamRing(s, rings[ri], n, Math.min(stride, Math.max(1, Math.floor(n / 8))), rev[ri]);
+    }
+  }
+  g.fillStyle = P.land; g.fill('evenodd');
+  if (dots.length) blitDots(g, dots, P.land);
+
+  if (!fast) {
+    /* The Adriatic inset replaces the global geometry inside its box, as on
+       the flat map — here the box is clipped as a curved quad. */
+    if (LAND.focus.length && V.k > 20 && boxOnGlobe(LAND.focusExtent)) {
+      g.save();
+      g.beginPath(); streamRing(s, GLOBE.fbox, GLOBE.fbox.length / 2, 1, GLOBE.fboxRev); g.clip();
+      g.fillStyle = P.surface3; g.fillRect(0, 0, W, H);
+      const fStride = clamp(Math.round(1.2 / Math.max(0.004, LAND.focusTolDeg * V.k)), 1, 12);
+      dots.length = 0;
+      g.beginPath();
+      for (let i = 0; i < LAND.focus.length; i++) {
+        const bb = LAND.focusBox[i], bw = bb[2] - bb[0], bh = bb[3] - bb[1];
+        if (bw < minSpan && bh < minSpan) continue;
+        if (!boxOnGlobe(bb)) continue;
+        if (bw < shapeSpan && bh < shapeSpan) {
+          if (pt((bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2)) dots.push(PT.x, PT.y, bw * V.k, bh * V.k);
+          continue;
+        }
+        const r = LAND.focus[i], n = r.length / 2;
+        if (n >= 4) streamRing(s, r, n, Math.min(fStride, Math.max(1, Math.floor(n / 6))), GLOBE.focus[i]);
+      }
+      g.fillStyle = P.land; g.fill('evenodd');
+      g.lineWidth = 0.7; g.strokeStyle = P.edge; g.stroke();
+      if (dots.length) blitDots(g, dots, P.land);
+      g.restore();
+    }
+
+    g.beginPath();
+    for (let li = 0; li < LAND.lakes.length; li++) {
+      const lb = LAND.lakeBox[li];
+      if (lb[2] - lb[0] < minLake && lb[3] - lb[1] < minLake) continue;
+      if (!boxOnGlobe(lb)) continue;
+      const r = LAND.lakes[li], n = r.length / 2;
+      if (n >= 4) streamRing(s, r, n, Math.min(stride, Math.max(1, Math.floor(n / 8))), GLOBE.lakes[li]);
+    }
+    g.fillStyle = P.surface3; g.fill('evenodd');
+    g.lineWidth = 0.6; g.strokeStyle = P.edge; g.globalAlpha = .7; g.stroke(); g.globalAlpha = 1;
+
+    g.beginPath();
+    const ab = [0, 0, 0, 0];
+    for (let ai = 0; ai < LAND.arcs.length; ai++) {
+      const o = ai * 4;
+      ab[0] = LAND.arcBox[o]; ab[1] = LAND.arcBox[o + 1]; ab[2] = LAND.arcBox[o + 2]; ab[3] = LAND.arcBox[o + 3];
+      if (ab[2] - ab[0] < minArc && ab[3] - ab[1] < minArc) continue;
+      if (!boxOnGlobe(ab)) continue;
+      const a = LAND.arcs[ai], n = a.length / 2;
+      if (n >= 2) streamLine(s, a, n, Math.min(stride, Math.max(1, Math.floor(n / 4))));
+    }
+    g.lineWidth = V.k > 40 ? 1 : 0.7; g.strokeStyle = P.edge; g.stroke();
+  }
+
+  /* graticule, then the limb */
+  /* Only the part of the grid that can be on screen. A half-degree grid over
+     the whole sphere is two million points — it was 330 ms of a 600 ms frame
+     zoomed into Dalmatia — and all but a few hundred of them are off screen. */
+  const step = [15, 5, 2, 1, .5, .2, .1, .05, .02, .01].find(v => v * V.k <= 160 && v * V.k >= 34) || 15;
+  const win = globeWindow();
+  let gr = win ? null : GLOBE.grat.get(step);
+  if (!gr) {
+    const gen = D3G.geoGraticule().step([step, step]).precision(Math.min(2.5, step / 4));
+    if (win) gen.extent([[win[0], win[1]], [win[2], win[3]]]);
+    gr = gen();
+    if (!win) GLOBE.grat.set(step, gr);
+  }
+  g.beginPath(); D3G.geoPath(globeProj(), g)(gr);
+  g.strokeStyle = P.grid; g.globalAlpha = .38; g.lineWidth = 1; g.stroke(); g.globalAlpha = 1;
+  g.beginPath(); g.arc(cx, cy, R, 0, 2 * Math.PI);
+  g.strokeStyle = P.edge; g.lineWidth = 1; g.stroke();
+}
+
+/* A region outline on the globe: the dashed box, curved to the sphere. */
+function strokeBoxGlobe(g, b) {
+  const ring = boxRing(b, 0.5), n = ring.length / 2, s = globeStream(g);
+  g.beginPath();
+  s.lineStart();
+  for (let i = 0; i < n; i++) s.point(ring[i * 2], ring[i * 2 + 1]);
+  s.point(ring[0], ring[1]);
+  s.lineEnd();
+  g.stroke();
+}
+
+/* Great-circle interpolation, for zooming toward the pointer on the globe. */
+function gcLerp(a, b, t) {
+  const v = (lo, la) => [Math.cos(la * DEG) * Math.cos(lo * DEG), Math.cos(la * DEG) * Math.sin(lo * DEG), Math.sin(la * DEG)];
+  const A = v(a[0], a[1]), B = v(b[0], b[1]);
+  const om = Math.acos(clamp(A[0] * B[0] + A[1] * B[1] + A[2] * B[2], -1, 1));
+  if (om < 1e-9) return a;
+  const so = Math.sin(om), ka = Math.sin((1 - t) * om) / so, kb = Math.sin(t * om) / so;
+  const p = [ka * A[0] + kb * B[0], ka * A[1] + kb * B[1], ka * A[2] + kb * B[2]];
+  return [Math.atan2(p[1], p[0]) / DEG, Math.atan2(p[2], Math.hypot(p[0], p[1])) / DEG];
+}
+
+/* Switch between the flat map and the globe, keeping the same place centred. */
+function setProjection(p) {
+  if (p === V.proj) return;
+  const wasWorld = V.proj === 'flat' && V.k <= (V.W / 360) * 1.15;
+  V.proj = p;
+  if (p === 'globe' && wasWorld) { V.k = 0; V.lon0 = 15; V.lat0 = 25; }   // whole globe, Europe & Africa facing
+  clampView(); geomKey = ''; invalidateBase(); paint();
+  const b = $('#zGlobe');
+  if (b) {
+    b.setAttribute('aria-pressed', String(p === 'globe'));
+    b.title = p === 'globe' ? 'Flat map' : 'Globe view';
+    b.setAttribute('aria-label', p === 'globe' ? 'Switch to flat map' : 'Switch to globe view');
+  }
+  const note = $('#mapNote');
+  if (note) note.textContent = p === 'globe'
+    ? 'drag to rotate · scroll to zoom · click a point for ground temperature'
+    : 'drag to pan · scroll to zoom · click a point for ground temperature';
+  announce(p === 'globe' ? 'Globe view' : 'Flat map view');
+}
+
+/* =====================================================================
+   Context layers — what the satellites cannot tell you.
+
+   A hot pixel says something is burning. It does not say whether anyone
+   knows, whether it has a name, or whether aircraft are already on it. Three
+   layers add that, each from a source a static page can call directly:
+
+     NASA EONET   wildfires reported by agencies (IRWIN, InciWeb and others),
+                  with real coordinates and the agency's own incident page;
+     GDELT        news coverage of fires worldwide, placed on the map by the
+                  town named in the headline;
+     FlyItalyADSB live ADS-B positions of firefighting aircraft — the one
+                  free flight feed that documents browser access. It needs a
+                  free key, which the user pastes into Settings.
+
+   All three fail independently and say so in the source strip, rather than
+   taking the dashboard down with them.
+   ===================================================================== */
+const safeUrl = u => (typeof u === 'string' && /^https?:\/\//i.test(u)) ? u : '';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const acresText = (v, unit) => {
+  if (v == null || !isFinite(v)) return '';
+  if (/acre/i.test(unit || '')) return `${fmt(v)} acres (${areaText(v * 0.0040469)})`;
+  if (/ha/i.test(unit || '')) return `${fmt(v)} ha (${areaText(v / 100)})`;
+  return `${fmt(v)} ${unit || ''}`.trim();
+};
+
+const NEWS = {
+  articles: [], incidents: [], groups: [],
+  gdelt: { state: 'idle', note: '', okAt: 0, next: 0, fails: 0, busy: false },
+  eonet: { state: 'idle', note: '', okAt: 0, next: 0, fails: 0, busy: false },
+  show: true, sel: null, focus: null, geoKey: ''
+};
+const GDELT_EVERY = 10 * 60e3, EONET_EVERY = 15 * 60e3;
+const GDELT_Q = '(wildfire OR wildfires OR "forest fire" OR bushfire OR "brush fire" OR "grass fire")';
+
+/* ---------------- NASA EONET: agency-reported incidents ---------------- */
+async function fetchEonet() {
+  const j = await jget('https://eonet.gsfc.nasa.gov/api/v3/events?category=wildfires&status=open&days=14&limit=500',
+                       { timeout: 25000 });
+  const out = [];
+  for (const e of (j && j.events) || []) {
+    // Geometry is a time series; the newest entry is where the fire is now.
+    let gl = null;
+    for (const g of e.geometry || []) {
+      if (!g || !g.coordinates) continue;
+      if (!gl || Date.parse(g.date) >= Date.parse(gl.date)) gl = g;
+    }
+    if (!gl) continue;
+    let lon, lat;
+    if (gl.type === 'Point') [lon, lat] = gl.coordinates;
+    else if (gl.type === 'Polygon' && gl.coordinates[0] && gl.coordinates[0].length) {
+      const r = gl.coordinates[0];
+      lon = r.reduce((a, p) => a + p[0], 0) / r.length;
+      lat = r.reduce((a, p) => a + p[1], 0) / r.length;
+    }
+    if (!isFinite(lon) || !isFinite(lat)) continue;
+    const src = (e.sources || []).find(s => safeUrl(s && s.url));
+    out.push({
+      id: String(e.id), title: String(e.title || 'Wildfire'), desc: String(e.description || ''),
+      lon: +lon, lat: +lat, ts: Date.parse(gl.date) || 0,
+      size: gl.magnitudeValue == null ? null : +gl.magnitudeValue, unit: gl.magnitudeUnit || '',
+      src: src ? String(src.id || '') : '', url: src ? safeUrl(src.url) : ''
+    });
+  }
+  return out.sort((a, b) => b.ts - a.ts);
+}
+
+/* ---------------- GDELT: fire news ----------------
+   GDELT allows browser calls (its CORS header is "*") but rate-limits hard:
+   a 429, a "Please limit requests" body, or an empty {} with a 200, and the
+   gate stays shut for about a minute. So: one request every ten minutes,
+   back off on any of those signals, and keep showing the last good list. */
+const gdeltThrottled = () => Object.assign(new Error('GDELT is rate-limiting — retrying shortly'), { throttled: true });
+async function fetchGdelt() {
+  const q = new URLSearchParams({ query: GDELT_Q, mode: 'artlist', format: 'json',
+                                  maxrecords: '250', timespan: '3d', sort: 'datedesc' });
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 25000);
+  let r, txt;
+  try {
+    r = await fetch('https://api.gdeltproject.org/api/v2/doc/doc?' + q, { signal: ctl.signal });
+    txt = await r.text();
+  } finally { clearTimeout(t); }
+  if (r.status === 429 || /limit requests/i.test(txt)) throw gdeltThrottled();
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  let j;
+  try { j = JSON.parse(txt); } catch { throw new Error('unexpected response from GDELT'); }
+  if (!j || !Array.isArray(j.articles)) {
+    if (j && typeof j === 'object' && !Object.keys(j).length) throw gdeltThrottled();
+    return [];
+  }
+  const seenUrl = new Set(), seenTitle = new Set(), out = [];
+  for (const a of j.articles) {
+    const url = safeUrl(a.url), title = String(a.title || '').replace(/\s+/g, ' ').trim();
+    if (!url || !title || seenUrl.has(url)) continue;
+    // The same wire story runs in dozens of outlets; keep the newest copy.
+    const tk = foldName(title).replace(/[^a-z0-9]+/g, ' ').trim();
+    if (seenTitle.has(tk)) continue;
+    seenUrl.add(url); seenTitle.add(tk);
+    const s = String(a.seendate || '');
+    const ts = /^\d{8}T\d{6}Z$/.test(s)
+      ? Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8), +s.slice(9, 11), +s.slice(11, 13), +s.slice(13, 15))
+      : 0;
+    out.push({ id: url, title, url, domain: String(a.domain || ''), ts,
+               lang: String(a.language || ''), srcCountry: String(a.sourcecountry || ''), loc: undefined, ctry: null });
+  }
+  return out;
+}
+
+/* ---------------- placing headlines on the map ----------------
+   GDELT articles carry no coordinates, so a headline is placed by the town it
+   names, matched against the gazetteer already embedded for "places at risk".
+   It is deliberately conservative: a one-word match has to be a sizeable
+   place, or be corroborated by the country the headline names or the
+   outlet's own country; common English words that are also town names
+   ("Split", "Mobile", "Reading") need that corroboration whatever their size.
+   A headline that names only a country is listed, but not pinned. */
+let GEO = null, GEO_COUNTRY = null;
+const GEO_CONNECT = new Set(['de', 'do', 'da', 'del', 'della', 'di', 'du', 'la', 'le', 'les', 'el', 'al',
+                             'of', 'on', 'upon', 'sur', 'am', 'an', 'the', 'y', 'e', 'en']);
+const GEO_STOP = new Set(('nice reading save male mobile surprise split roman temple enterprise oral batman metro bend tours derby mercedes toyota flint moron shaping colon atlantis corona midland natal mecca mascara centennial soma americana concordia ruse gent waldorf mora sari slough erode banda chas babu cabo lira mila chino dalai kara brits nikki nigel bama providence concord aurora phoenix columbus homestead riverside pueblo mesa chico boulder valencia toledo buffalo david mary martin jackson davis anderson austin hamilton lawrence lincoln warren nelson franklin charlotte kent madison tyler nancy norman rogers frederick eugene montgomery lynn preston kimberley shelby bowie everett thornton weston lowell blaine beaumont casper elgin edmond mckinney kendall livingstone napier maitland lawton ogden raleigh stafford darwin hammond conway carmel ames bismarck adler hassan anand leon melo edison mariano santander richmond durham newcastle mackay kingston columbia florence sofia regina constantine medina mendoza santos salvador trinidad salem perm gary irving jasper than come date central drama asia orange tank clinton wilson marks liberty punch marshall evans douglas wright coin paradise kyle lucas logan harper hudson duncan brandon mentor alot honda papa anthem sebastian reservoir griffin monroe robertson sherman princeton chester marion lopez vernon kanye turbo newark castro apex petersburg patterson torres tara cove helena mafia flores margarita isabela hope unity independence march june august sale deal eagle union commerce center bath').split(' '));
+/* States, provinces and fire-prone regions behave like countries here:
+   they corroborate a town in the same headline but are never pinned
+   themselves — "California wildfire" must not land on a hamlet called
+   California. Islands are the exception, handled separately below. */
+const GEO_REGIONS = (() => {
+  const m = {};
+  const add = (cc, list) => list.split(',').forEach(n => { m[n.trim()] = cc; });
+  add('US', 'alabama,alaska,arizona,arkansas,california,colorado,connecticut,delaware,florida,georgia,hawaii,' +
+    'idaho,illinois,indiana,iowa,kansas,kentucky,louisiana,maine,maryland,massachusetts,michigan,minnesota,' +
+    'mississippi,missouri,montana,nebraska,nevada,new hampshire,new jersey,new mexico,new york,north carolina,' +
+    'north dakota,ohio,oklahoma,oregon,pennsylvania,rhode island,south carolina,south dakota,tennessee,texas,' +
+    'utah,vermont,virginia,washington,west virginia,wisconsin,wyoming,socal,norcal');
+  add('CA', 'alberta,british columbia,manitoba,new brunswick,newfoundland and labrador,nova scotia,ontario,' +
+    'quebec,saskatchewan,yukon,nunavut,northwest territories');
+  add('AU', 'new south wales,queensland,victoria,western australia,south australia,northern territory');
+  add('ES', 'andalusia,andalucia,catalonia,catalunya,galicia,extremadura,castile and leon,canary islands');
+  add('PT', 'algarve,alentejo'); add('FR', 'provence,occitanie,aquitaine,gironde,landes');
+  add('IT', 'tuscany,calabria,apulia,puglia,campania'); add('GR', 'attica,peloponnese,thessaly');
+  add('HR', 'dalmatia,istria,slavonia,lika,kvarner'); add('GB', 'cornwall,yorkshire');
+  add('RU', 'siberia,yakutia,sakha,zabaykalsky,transbaikal'); add('AR', 'patagonia');
+  add('BR', 'pantanal,amazonas,mato grosso,rondonia'); add('ID', 'kalimantan,riau');
+  return m;
+})();
+const ISLE_ALIAS = { 'evia': 'Euboea', "k'gari": 'Fraser Island', 'majorca': 'Mallorca', 'minorca': 'Menorca' };
+let GEO_ISLE = null;
+const COUNTRY_ALIAS = { 'us': 'US', 'u.s': 'US', 'usa': 'US', 'america': 'US', 'uk': 'GB', 'britain': 'GB',
+  'england': 'GB', 'scotland': 'GB', 'wales': 'GB', 'bosnia': 'BA', 'herzegovina': 'BA', 'czechia': 'CZ',
+  'turkiye': 'TR', 'russia': 'RU', 'holland': 'NL', 'uae': 'AE', 'drc': 'CD', 'korea': 'KR', 'congo': 'CD', 'bolivia': 'BO', 'venezuela': 'VE',
+  'iran': 'IR', 'syria': 'SY', 'laos': 'LA', 'vietnam': 'VN', 'tanzania': 'TZ', 'macedonia': 'MK' };
+function buildGeo() {
+  if (GEO || !CITY.ready) return;
+  const m = new Map();
+  for (let i = 0; i < CITY.n; i++) {
+    const nm = CITY.names[i];
+    if (!nm || nm.length < 3) continue;
+    const k = foldName(nm);
+    let a = m.get(k);
+    if (!a) m.set(k, a = []);
+    a.push(i);
+  }
+  for (const a of m.values()) a.sort((x, y) => CITY.pop[y] - CITY.pop[x]);
+  GEO = m;
+  const norm = t => foldName(t).replace(/&/g, ' and ').replace(/\./g, '').replace(/\s+/g, ' ').trim();
+  GEO_COUNTRY = new Map([...Object.entries(COUNTRY_ALIAS), ...Object.entries(GEO_REGIONS)]);
+  for (const cc of CITY.countries) {
+    const nm = countryName(cc);
+    if (nm && nm !== cc) GEO_COUNTRY.set(norm(nm), cc);
+  }
+  GEO_ISLE = new Map();
+  for (const f of (typeof NAMED !== 'undefined' && NAMED.islands) || []) GEO_ISLE.set(norm(f.name), f);
+  for (const [k, v] of Object.entries(ISLE_ALIAS)) {
+    const f = (NAMED.islands || []).find(x => x.name === v);
+    if (f) GEO_ISLE.set(k, f);
+  }
+}
+function locateTitle(title, srcCountry) {
+  buildGeo();
+  if (!GEO) return { loc: undefined, ctry: null };
+  const toks = (title.match(/[\p{L}][\p{L}'’.\-]*/gu) || []).map(w => ({
+    f: foldName(w).replace(/[’]/g, "'").replace(/[.\-']+$/, ''),
+    cap: /^\p{Lu}/u.test(w)
+  }));
+  // Countries named in the headline, plus the outlet's own country.
+  const named = new Set();
+  for (let i = 0; i < toks.length; i++)
+    for (let len = 3; len >= 1; len--) {
+      if (i + len > toks.length) continue;
+      const k = toks.slice(i, i + len).map(t => t.f).join(' ');
+      const cc = GEO_ISLE.has(k) ? null : GEO_COUNTRY.get(k);
+      if (cc) { named.add(cc); break; }
+    }
+  const srcCC = srcCountry ? GEO_COUNTRY.get(foldName(srcCountry).replace(/&/g, ' and ').replace(/\./g, '').replace(/\s+/g, ' ').trim()) || null : null;
+
+  let best = null;
+  const ccOf = c => CITY.countries[CITY.cc[c]];
+  for (let i = 0; i < toks.length; i++) {
+    if (!toks[i].cap) continue;
+    for (let len = 4; len >= 1; len--) {
+      if (i + len > toks.length) continue;
+      const span = toks.slice(i, i + len);
+      if (!span[len - 1].cap) continue;
+      if (span.some((t, j) => !t.cap && !(j > 0 && j < len - 1 && GEO_CONNECT.has(t.f)))) continue;
+      const key = span.map(t => t.f).join(' ');
+      const isle = GEO_ISLE.get(key);
+      if (!isle && GEO_COUNTRY.has(key)) break;            // a country or state: context, not a pin
+      const cands = GEO.get(key);
+      let hit = null;
+      if (cands) {
+        const inNamed = cands.find(c => named.has(ccOf(c)));
+        const top = cands[0];
+        // The outlet's own country decides between same-named towns only when
+        // its candidate is of comparable size: a US paper's "Athens" is still Greece.
+        const inSrc = srcCC ? cands.find(c => ccOf(c) === srcCC && CITY.pop[c] >= 0.2 * CITY.pop[top]) : undefined;
+        const c = inNamed !== undefined ? inNamed : inSrc !== undefined ? inSrc : top;
+        const pop = CITY.pop[c], stop = GEO_STOP.has(key);
+        const ok = len > 1
+          ? (pop >= 2000 || inNamed !== undefined || inSrc !== undefined)
+          : key.length >= 4 && (stop ? inNamed !== undefined
+              : inNamed !== undefined || pop >= 50000 || (inSrc !== undefined && pop >= 20000));
+        if (ok) hit = { score: len * 10 + (inNamed !== undefined ? 6 : inSrc !== undefined ? 3 : 0) + Math.log10(1 + pop),
+                        loc: { k: 'c' + c, lat: CITY.lat[c], lon: CITY.lon[c], name: CITY.names[c], cc: ccOf(c) },
+                        strong: pop >= 50000 || inNamed !== undefined };
+      }
+      if (isle && !(hit && hit.strong) && key.length >= 4 && !GEO_STOP.has(key))
+        hit = { score: len * 10 + 7, loc: { k: 'i' + isle.name, lat: isle.lat, lon: isle.lon, name: isle.name, cc: '' } };
+      if (hit && (!best || hit.score > best.score)) best = hit;
+      if (hit || cands || isle) break;                      // longest match at this position wins
+    }
+  }
+  if (best) return { loc: best.loc, ctry: best.loc.cc || (named.size === 1 ? [...named][0] : null) };
+  return { loc: null, ctry: named.size === 1 ? [...named][0] : null };
+}
+function geocodeNews() {
+  if (!CITY.ready) return;
+  const key = NEWS.articles.length + '|' + (NEWS.articles[0] && NEWS.articles[0].id) + '|' + CITY.n;
+  if (key === NEWS.geoKey) return;
+  for (const a of NEWS.articles)
+    if (a.loc === undefined) Object.assign(a, locateTitle(a.title, a.srcCountry));
+  NEWS.geoKey = key;
+}
+
+/* What the map and the list show: the time window and the region apply to
+   news exactly as they do to hot pixels. Agency incidents are open fires, so
+   they follow the region but not the window. */
+function newsInView() {
+  const f = S.filters, cut = Date.now() - f.age * HOUR;
+  const world = f.bbox[0] <= -179.9 && f.bbox[2] >= 179.9;
+  const arts = NEWS.articles.filter(a => a.ts >= cut &&
+    (world || (a.loc && inBox(a.loc.lat, a.loc.lon, f.bbox))));
+  const incs = NEWS.incidents.filter(e => world || inBox(e.lat, e.lon, f.bbox));
+  return { arts, incs };
+}
+function groupNews(arts) {
+  const by = new Map();
+  for (const a of arts) {
+    if (!a.loc) continue;
+    let gp = by.get(a.loc.k);
+    if (!gp) by.set(a.loc.k, gp = { i: a.loc.k, lat: a.loc.lat, lon: a.loc.lon, name: a.loc.name, cc: a.loc.cc, items: [] });
+    gp.items.push(a);
+  }
+  return Array.from(by.values()).sort((a, b) => b.items.length - a.items.length);
+}
+
+async function pollEonet() {
+  const st = NEWS.eonet;
+  st.busy = true;
+  try {
+    NEWS.incidents = await fetchEonet();
+    st.state = 'ok'; st.note = ''; st.okAt = Date.now(); st.fails = 0;
+    st.next = Date.now() + EONET_EVERY;
+  } catch (err) {
+    st.fails++;
+    st.state = NEWS.incidents.length ? 'stale' : 'down';
+    st.note = err && err.name === 'AbortError' ? 'timed out' : err && err.name === 'TypeError' ? 'network or browser blocked the request' : (err && err.message) || 'unreachable';
+    st.next = Date.now() + Math.min(30 * 60e3, 2 * 60e3 * 2 ** (st.fails - 1));
+  } finally { st.busy = false; layersChanged(); }
+}
+async function pollGdelt() {
+  const st = NEWS.gdelt;
+  st.busy = true;
+  try {
+    const arts = await fetchGdelt();
+    NEWS.articles = arts; NEWS.geoKey = '';
+    geocodeNews();
+    st.state = 'ok'; st.note = ''; st.okAt = Date.now(); st.fails = 0;
+    st.next = Date.now() + GDELT_EVERY;
+  } catch (err) {
+    st.fails++;
+    st.state = NEWS.articles.length ? 'stale' : 'down';
+    st.note = err && err.name === 'AbortError' ? 'timed out' : err && err.name === 'TypeError' ? 'network or browser blocked the request' : (err && err.message) || 'unreachable';
+    st.next = Date.now() + (err && err.throttled ? 3 * 60e3 : Math.min(30 * 60e3, 2 * 60e3 * 2 ** (st.fails - 1)));
+  } finally { st.busy = false; layersChanged(); }
+}
+
+/* ---------------- firefighting aircraft ----------------
+   Identified by ICAO type designator (ICAO Doc 8643). Purpose-built water
+   bombers and the Air-Crane are shown wherever they fly. Dual-use types — the
+   Air Tractor is also a crop sprayer, DC-10s and Electras also fly freight —
+   are shown only within 150 km of an active fire in view, because that is
+   the only thing that makes them likely to be on a fire. */
+const FIRE_TYPES = {
+  CL2T: { label: 'Canadair CL-415 / CL-215T', role: 'water bomber', always: true },
+  CL2P: { label: 'Canadair CL-215', role: 'water bomber', always: true },
+  S64:  { label: 'Erickson S-64 Air-Crane', role: 'firefighting helicopter', always: true, heli: true },
+  AT8T: { label: 'Air Tractor AT-802', role: 'Fire Boss or crop sprayer', always: false },
+  DC10: { label: 'McDonnell Douglas DC-10', role: 'air tanker or freighter', always: false },
+  L188: { label: 'Lockheed L-188 Electra', role: 'air tanker or freighter', always: false }
+};
+const AIR_NEAR_KM = 150, AIR_EVERY = 60e3, AIR_KEY_STORE = 'firewatch.adsbKey';
+const AIR = { all: [], list: [], trails: new Map(), state: 'off', note: '', okAt: 0, tryAt: 0,
+              busy: false, show: true, sel: null, far: 0 };
+const airKey = () => (S.cfg.adsbKey || '').trim();
+
+async function fetchAirType(t, key) {
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 15000);
+  try {
+    const r = await fetch('https://api.flyitalyadsb.com/v2/type/' + t,
+      { headers: { 'X-Api-Key': key, accept: 'application/json' }, signal: ctl.signal });
+    if (r.status === 401) throw Object.assign(new Error('the aircraft key was rejected'), { fatal: true });
+    if (r.status === 403) throw Object.assign(new Error('the flight feed refused the request (403)'), { fatal: true });
+    if (r.status === 429) throw Object.assign(new Error('flight-feed rate limit reached'), { fatal: true });
+    if (r.status === 404) return [];
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    return Array.isArray(j && j.ac) ? j.ac : [];
+  } finally { clearTimeout(tm); }
+}
+const num = v => (v === '' || v == null || !isFinite(+v)) ? null : +v;
+function normAircraft(a, t) {
+  const lat = num(a.lat), lon = num(a.lon);
+  if (lat == null || lon == null) return null;
+  const age = num(a.seen_pos) ?? num(a.seen) ?? 0;
+  if (age > 300) return null;                       // a position older than five minutes is history
+  const ground = a.alt_baro === 'ground';
+  return {
+    hex: String(a.hex || '').toLowerCase(), flight: String(a.flight || '').trim(), reg: String(a.r || ''),
+    type: String(a.t || t).toUpperCase(), lat, lon, ground,
+    alt: ground ? 0 : (num(a.alt_baro) ?? num(a.alt_geom)), gs: num(a.gs),
+    trk: num(a.track) ?? num(a.true_heading) ?? num(a.mag_heading),
+    age, mil: !!((a.dbFlags | 0) & 1), fireKm: null, at: Date.now()
+  };
+}
+function nearestFireKm(lat, lon) {
+  let best = Infinity;
+  for (const inc of S.incidents) {
+    const d = haversine(lat, lon, inc.lat, inc.lon);
+    if (d < best) best = d;
+  }
+  return best;
+}
+/* Re-derive what is shown: near-fire distances and the region filter both
+   move with the data, not only with a new aircraft poll. */
+let _airViewKey = '';
+function airInView() {
+  const f = S.filters, world = f.bbox[0] <= -179.9 && f.bbox[2] >= 179.9;
+  // Cached: it is asked for on every paint, and mid-rotation that is every frame.
+  const key = [AIR.okAt, AIR.all.length, S.cycle, f.bbox.join(), S.incidents.length].join('|');
+  if (key === _airViewKey) return AIR.list;
+  _airViewKey = key;
+  let far = 0;
+  const list = [];
+  for (const a of AIR.all) {
+    a.fireKm = nearestFireKm(a.lat, a.lon);
+    const meta = FIRE_TYPES[a.type] || {};
+    if (!meta.always && !(a.fireKm <= AIR_NEAR_KM)) { far++; continue; }
+    if (!world && !inBox(a.lat, a.lon, f.bbox)) continue;
+    list.push(a);
+  }
+  AIR.list = list.sort((a, b) => (a.fireKm || 1e9) - (b.fireKm || 1e9));
+  AIR.far = far;
+  return AIR.list;
+}
+async function pollAircraft() {
+  const key = airKey();
+  if (!key) { AIR.state = 'off'; AIR.all = []; AIR.list = []; layersChanged(); return; }
+  AIR.busy = true; AIR.tryAt = Date.now();
+  const got = [];
+  let ok = 0, lastErr = null;
+  try {
+    for (const t of Object.keys(FIRE_TYPES)) {
+      try {
+        for (const a of await fetchAirType(t, key)) { const n = normAircraft(a, t); if (n) got.push(n); }
+        ok++;
+      } catch (e) {
+        if (e.fatal) throw e;
+        lastErr = e;
+      }
+      await sleep(350);                               // well inside 30 requests a minute
+    }
+    if (!ok) throw lastErr || new Error('unreachable');
+    const now = Date.now();
+    for (const a of got) {
+      let tr = AIR.trails.get(a.hex);
+      if (!tr) AIR.trails.set(a.hex, tr = []);
+      const last = tr[tr.length - 1];
+      if (!last || last.lat !== a.lat || last.lon !== a.lon) tr.push({ lat: a.lat, lon: a.lon, t: now });
+      while (tr.length > 30 || (tr.length && now - tr[0].t > 30 * 60e3)) tr.shift();
+    }
+    for (const [hex, tr] of AIR.trails) if (!tr.length || now - tr[tr.length - 1].t > 30 * 60e3) AIR.trails.delete(hex);
+    AIR.all = got;
+    AIR.state = 'ok'; AIR.note = ok < Object.keys(FIRE_TYPES).length ? 'some aircraft types did not load' : '';
+    AIR.okAt = now;
+  } catch (e) {
+    AIR.state = 'down';
+    AIR.note = e && e.name === 'TypeError'
+      ? 'could not reach the flight feed — the network or the browser blocked the request'
+      : (e && e.name === 'AbortError' ? 'timed out' : (e && e.message) || 'unreachable');
+  } finally { AIR.busy = false; layersChanged(); }
+}
+
+/* ---------------- scheduling ---------------- */
+function tickLayers() {
+  if (document.hidden || !S.cycle) return;          // after the first fire data, never before it
+  const now = Date.now();
+  if (NEWS.show) {
+    if (!NEWS.eonet.busy && now >= NEWS.eonet.next) pollEonet();
+    if (!NEWS.gdelt.busy && now >= NEWS.gdelt.next) pollGdelt();
+  }
+  if (AIR.show && airKey() && !AIR.busy && now - AIR.tryAt >= AIR_EVERY) pollAircraft();
+}
+let _layersT = 0;
+function layersChanged() {
+  clearTimeout(_layersT);
+  _layersT = setTimeout(() => {
+    geocodeNews();
+    invalidateBase(); paint();
+    renderLayers(true);
+    renderSourceStrip();
+  }, 30);
+}
+
+/* ---------------- drawing ---------------- */
+let OVHIT = [];
+function forEachCopy(lon, lat, offs, fn) {
+  if (V.proj === 'globe') { if (pt(lon, lat)) fn(PT.x, PT.y, 0); return; }
+  const x0 = px(lon), y = py(lat);
+  if (y < -30 || y > V.H + 30) return;
+  for (const o of offs) { const x = x0 + o; if (x > -30 && x < V.W + 30) fn(x, y, o); }
+}
+function overlaySprite(kind) {
+  const key = 'ov:' + kind;
+  let s = SPR.map.get(key);
+  if (s) return s;
+  const P = palette(), w = 16, h = kind === 'news' ? 20 : 16;
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * V.dpr); c.height = Math.round(h * V.dpr);
+  const q = c.getContext('2d');
+  q.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+  q.lineJoin = 'round'; q.lineWidth = 1.5; q.strokeStyle = P.surface1; q.fillStyle = P.news;
+  q.beginPath();
+  if (kind === 'news') {                              // a map pin: the headline names this town
+    q.moveTo(8, 19);
+    q.bezierCurveTo(6.5, 16.5, 2, 12, 2, 7.8);
+    q.arc(8, 7.8, 6, Math.PI, 0);
+    q.bezierCurveTo(14, 12, 9.5, 16.5, 8, 19);
+  } else {                                            // a diamond: an agency's own incident record
+    q.moveTo(8, 1.5); q.lineTo(14.5, 8); q.lineTo(8, 14.5); q.lineTo(1.5, 8);
+  }
+  q.closePath(); q.fill(); q.stroke();
+  q.beginPath(); q.fillStyle = P.surface1;
+  q.arc(8, kind === 'news' ? 7.8 : 8, 2.3, 0, 6.2832); q.fill();
+  s = { c, w, h, ax: 8, ay: kind === 'news' ? 19 : 8 };
+  SPR.map.set(key, s);
+  return s;
+}
+function drawRingAt(g, x, y, r, col) {
+  g.save(); g.lineWidth = 2.2; g.strokeStyle = col; g.globalAlpha = .95;
+  g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.stroke(); g.restore();
+}
+function drawNewsLayer(g, W, H, offs) {
+  const P = palette();
+  const { arts, incs } = newsInView();
+  NEWS.groups = groupNews(arts);
+  spritesValid();
+  const inc = overlaySprite('inc'), pin = overlaySprite('news');
+  for (const e of incs) {
+    forEachCopy(e.lon, e.lat, offs, (x, y) => {
+      g.drawImage(inc.c, x - inc.ax, y - inc.ay, inc.w, inc.h);
+      if (NEWS.sel === 'e:' + e.id) drawRingAt(g, x, y, 12, P.news);
+      OVHIT.push({ x, y, r: 10, kind: 'inc', e });
+    });
+  }
+  g.save();
+  g.font = '700 10px system-ui, -apple-system, "Segoe UI", sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (const gp of NEWS.groups) {
+    forEachCopy(gp.lon, gp.lat, offs, (x, y) => {
+      g.drawImage(pin.c, x - pin.ax, y - pin.ay, pin.w, pin.h);
+      const hy = y - pin.ay + 7.8;                    // the head of the pin
+      if (gp.items.length > 1) {
+        const label = gp.items.length > 99 ? '99+' : String(gp.items.length);
+        const bw = Math.max(13, g.measureText(label).width + 7);
+        g.fillStyle = P.surface1; g.beginPath();
+        g.roundRect ? g.roundRect(x + 4, hy - 13, bw, 12, 6) : g.rect(x + 4, hy - 13, bw, 12);
+        g.fill(); g.lineWidth = 1; g.strokeStyle = P.news; g.stroke();
+        g.fillStyle = P.news; g.fillText(label, x + 4 + bw / 2, hy - 7);
+      }
+      if (NEWS.sel === 'n:' + gp.i) drawRingAt(g, x, hy, 11, P.news);
+      OVHIT.push({ x, y: hy, r: 10, kind: 'news', gp });
+    });
+  }
+  g.restore();
+}
+function planePath(g, heli) {
+  g.beginPath();
+  if (heli) {                                        // rotor disc, cabin, tail boom
+    g.arc(0, 0, 7.5, 0, 6.2832);
+    g.moveTo(2.6, 0); g.arc(0, 0, 2.6, 0, 6.2832);
+    g.moveTo(-0.8, 2); g.lineTo(-0.8, 9.5); g.lineTo(0.8, 9.5); g.lineTo(0.8, 2);
+  } else {                                           // nose up = north; rotated by track
+    g.moveTo(0, -8); g.lineTo(1.3, -5); g.lineTo(1.3, -1.6); g.lineTo(8, 1.6); g.lineTo(8, 3.3);
+    g.lineTo(1.3, 1.8); g.lineTo(1.1, 5.4); g.lineTo(3.4, 7); g.lineTo(3.4, 8.2); g.lineTo(0, 7.4);
+    g.lineTo(-3.4, 8.2); g.lineTo(-3.4, 7); g.lineTo(-1.1, 5.4); g.lineTo(-1.3, 1.8); g.lineTo(-8, 3.3);
+    g.lineTo(-8, 1.6); g.lineTo(-1.3, -1.6); g.lineTo(-1.3, -5); g.closePath();
+  }
+}
+function drawAirLayer(g, W, H, offs) {
+  if (!AIR.list.length) return;
+  const P = palette();
+  g.save();
+  // trails first, so the aircraft sit on top of where they have been
+  g.lineWidth = 1.5; g.strokeStyle = P.air; g.globalAlpha = .45; g.setLineDash([3, 3]);
+  for (const a of AIR.list) {
+    const tr = AIR.trails.get(a.hex);
+    if (!tr || tr.length < 2) continue;
+    if (V.proj === 'globe') {
+      g.beginPath(); let pen = false;
+      for (const q of tr) { if (pt(q.lon, q.lat)) { pen ? g.lineTo(PT.x, PT.y) : g.moveTo(PT.x, PT.y); pen = true; } else pen = false; }
+      g.stroke();
+    } else for (const o of offs) {
+      g.beginPath();
+      tr.forEach((q, i) => { const x = px(q.lon) + o, y = py(q.lat); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+      g.stroke();
+    }
+  }
+  g.setLineDash([]); g.globalAlpha = 1;
+  g.font = '600 10.5px system-ui, -apple-system, "Segoe UI", sans-serif';
+  g.textBaseline = 'middle'; g.lineJoin = 'round';
+  // Callsigns only once zoomed in past a continent: at world scale the fleet
+  // around one fire would print as one illegible knot of text.
+  const labelAll = V.k >= 12 && AIR.list.length <= 40;
+  for (const a of AIR.list) {
+    const meta = FIRE_TYPES[a.type] || {};
+    forEachCopy(a.lon, a.lat, offs, (x, y) => {
+      g.save(); g.translate(x, y); g.rotate((a.trk || 0) * DEG);
+      planePath(g, !!meta.heli);
+      g.fillStyle = P.air; g.globalAlpha = a.ground ? .55 : 1;
+      g.fill('evenodd'); g.lineWidth = 1.2; g.strokeStyle = P.surface1; g.stroke();
+      g.restore();
+      if (AIR.sel === a.hex) drawRingAt(g, x, y, 13, P.air);
+      if (labelAll || AIR.sel === a.hex) {
+        const t = a.flight || a.reg || a.type;
+        g.lineWidth = 3; g.strokeStyle = P.surface3; g.strokeText(t, x + 11, y + 1);
+        g.fillStyle = P.air; g.fillText(t, x + 11, y + 1);
+      }
+      OVHIT.push({ x, y, r: 11, kind: 'air', a });
+    });
+  }
+  g.restore();
+}
+function drawOverlays(g, W, H, offs) {
+  OVHIT = [];
+  airInView();
+  if (NEWS.show) drawNewsLayer(g, W, H, offs);
+  if (AIR.show) drawAirLayer(g, W, H, offs);
+}
+
+/* ---------------- hit-testing, tooltips, selection ---------------- */
+function nearestOverlay(x, y) {
+  let best = null, bd = Infinity;
+  for (const h of OVHIT) {
+    const dx = h.x - x, dy = h.y - y, d2 = dx * dx + dy * dy;
+    if (d2 <= (h.r + 4) ** 2 && d2 < bd) { bd = d2; best = h; }
+  }
+  return best;
+}
+function placeTip(cx, cy) {
+  const wrap = cv.parentElement.getBoundingClientRect();
+  tipEl.style.opacity = 1;
+  const tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+  let lx = cx - wrap.left + 14, ly = cy - wrap.top + 14;
+  if (lx + tw > wrap.width - 6) lx = cx - wrap.left - tw - 14;
+  if (ly + th > wrap.height - 6) ly = cy - wrap.top - th - 14;
+  tipEl.style.left = Math.max(6, lx) + 'px';
+  tipEl.style.top = Math.max(6, ly) + 'px';
+}
+const ftM = ft => `${fmt(ft)} ft · ${fmt(ft * 0.3048)} m`;
+const ktKmh = kt => `${fmt(kt)} kt · ${fmt(kt * 1.852)} km/h`;
+function airDesc(a) {
+  const meta = FIRE_TYPES[a.type] || { label: a.type, role: 'aircraft' };
+  return { meta, name: a.flight || a.reg || a.hex.toUpperCase() };
+}
+function overlayTipHTML(o) {
+  if (o.kind === 'inc') {
+    const e = o.e;
+    return `<div class="t"><span class="chip agency">INCIDENT</span>${esc(e.title)}</div><dl>` +
+      (e.desc ? `<dt>Where</dt><dd>${esc(e.desc)}</dd>` : '') +
+      (e.size != null ? `<dt>Size</dt><dd>${esc(acresText(e.size, e.unit))}</dd>` : '') +
+      `<dt>Updated</dt><dd>${e.ts ? relTime(e.ts) : '—'}</dd>` +
+      `<dt>Reported by</dt><dd>${esc(e.src || 'agency')}</dd></dl>` +
+      `<div class="tipsrc">NASA EONET · open incident</div>`;
+  }
+  if (o.kind === 'news') {
+    const gp = o.gp, items = gp.items.slice(0, 3);
+    return `<div class="t"><span class="chip news">NEWS</span>${esc(gp.name)}${gp.cc ? ', ' + esc(countryName(gp.cc)) : ''}</div>` +
+      `<ul class="tipnews">${items.map(a =>
+        `<li>${esc(a.title)}<span>${esc(a.domain)} · ${a.ts ? relTime(a.ts) : ''}</span></li>`).join('')}</ul>` +
+      `<div class="tipsrc">${gp.items.length > 3 ? `+${gp.items.length - 3} more · ` : ''}click for the full list · located from the headline</div>`;
+  }
+  const a = o.a, { meta, name } = airDesc(a);
+  return `<div class="t"><span class="chip air">AIRCRAFT</span>${esc(name)}</div><dl>` +
+    `<dt>Type</dt><dd>${esc(meta.label)}</dd><dt>Role</dt><dd>${esc(meta.role)}</dd>` +
+    (a.reg ? `<dt>Registration</dt><dd>${esc(a.reg)}</dd>` : '') +
+    `<dt>Altitude</dt><dd>${a.ground ? 'on the ground' : a.alt == null ? '—' : ftM(a.alt)}</dd>` +
+    `<dt>Speed</dt><dd>${a.gs == null ? '—' : ktKmh(a.gs)}</dd>` +
+    `<dt>Heading</dt><dd>${a.trk == null ? '—' : Math.round(a.trk) + '°'}</dd>` +
+    `<dt>Nearest fire</dt><dd>${isFinite(a.fireKm) ? (a.fireKm < 10 ? a.fireKm.toFixed(1) : fmt(a.fireKm)) + ' km' : '—'}</dd>` +
+    `<dt>Position</dt><dd>${Math.round(a.age)} s old</dd></dl>` +
+    `<div class="tipsrc">${a.mil ? 'Military-registered · ' : ''}Flight data: FlyItalyADSB, CC BY-SA 4.0</div>`;
+}
+let _tipHide = 0;
+function showOverlayTip(o, cx, cy, sticky) {
+  tipEl.innerHTML = overlayTipHTML(o);
+  placeTip(cx, cy);
+  clearTimeout(_tipHide);
+  if (sticky) _tipHide = setTimeout(hideTip, 6000);    // a tap has no "mouse leaves" to close it
+}
+function selectOverlay(o, cx, cy) {
+  if (o.kind === 'air') { AIR.sel = o.a.hex; setSideTab('air'); }
+  else {
+    NEWS.sel = o.kind === 'inc' ? 'e:' + o.e.id : 'n:' + o.gp.i;
+    NEWS.focus = o.kind === 'news' ? o.gp.i : null;
+    setSideTab('news');
+  }
+  renderLayers(true);
+  invalidateBase(); paint();
+  if (cx != null) showOverlayTip(o, cx, cy, true);
+  const row = document.querySelector('#newsList .sel, #airList .sel');
+  if (row && row.scrollIntoView) row.scrollIntoView({ block: 'nearest' });
+}
+function centreOn(lat, lon, minK) {
+  V.lat0 = lat; V.lon0 = lon; V.k = Math.max(V.k, minK || 40);
+  clampView(); paint();
+}
+
+/* ---------------- the side-panel lists ---------------- */
+let _newsKey = '', _airKey = '';
+function renderLayers(force) {
+  if (S.sideTab === 'news') renderNews(force);
+  if (S.sideTab === 'air') renderAir(force);
+  if (S.sideTab === 'news' || S.sideTab === 'air') renderSideNote();
+}
+function renderNews(force) {
+  const el = $('#newsList');
+  if (!el) return;
+  const { arts, incs } = newsInView();
+  const focus = NEWS.focus;
+  const shown = focus != null ? arts.filter(a => a.loc && a.loc.k === focus) : arts;
+  const key = [shown.length, shown[0] && shown[0].id, incs.length, incs[0] && incs[0].id, NEWS.sel, focus,
+               NEWS.gdelt.state, NEWS.eonet.state, S.filters.age, _cssCache.size].join('|');
+  if (!force && key === _newsKey) return;
+  _newsKey = key;
+  const parts = [];
+  if (focus != null) {
+    const gp = NEWS.groups.find(g => g.i === focus);
+    parts.push(`<div class="nhead">Showing ${shown.length} article${shown.length === 1 ? '' : 's'} about
+      <b>${esc(gp ? gp.name : 'this place')}</b> <button class="linkbtn" data-act="all">show all news</button></div>`);
+  }
+  if (focus == null && incs.length) {
+    parts.push(`<div class="nsec">Reported incidents · NASA EONET</div>`);
+    for (const e of incs.slice(0, 40)) {
+      const url = safeUrl(e.url);
+      parts.push(`<div class="nrow${NEWS.sel === 'e:' + e.id ? ' sel' : ''}" data-lat="${e.lat}" data-lon="${e.lon}" data-k="e:${esc(e.id)}">
+        <div class="r1"><span class="chip agency">INCIDENT</span><span class="ttl">${esc(e.title)}</span></div>
+        <div class="r2">${e.size != null ? `<span>${esc(acresText(e.size, e.unit))}</span>` : ''}
+          <span>${e.ts ? relTime(e.ts) : ''}</span>
+          ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(e.src || 'source')}</a>` : ''}
+          <button class="linkbtn" data-act="map">show on map</button></div>
+      </div>`);
+    }
+  }
+  if (shown.length) {
+    if (focus == null) parts.push(`<div class="nsec">In the news · GDELT · last ${S.filters.age} h</div>`);
+    for (const a of shown.slice(0, 120)) {
+      const sel = a.loc && NEWS.sel === 'n:' + a.loc.k;
+      parts.push(`<div class="nrow${sel ? ' sel' : ''}"${a.loc ? ` data-lat="${a.loc.lat}" data-lon="${a.loc.lon}" data-k="n:${esc(a.loc.k)}"` : ''}>
+        <div class="r1"><span class="chip news">NEWS</span><a class="ttl" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">${esc(a.title)}</a></div>
+        <div class="r2"><span>${esc(a.domain)}</span><span>${a.ts ? relTime(a.ts) : ''}</span>
+          ${a.loc ? `<button class="linkbtn" data-act="map">${esc(a.loc.name)}${a.loc.cc ? ', ' + esc(a.loc.cc) : ''}</button>`
+                  : `<span class="muted">${a.ctry ? esc(countryName(a.ctry)) + ' · not pinned' : 'place not identified'}</span>`}</div>
+      </div>`);
+    }
+  }
+  if (!parts.length) {
+    const g = NEWS.gdelt, e = NEWS.eonet;
+    const why = (g.state === 'down' || e.state === 'down')
+      ? `The news feeds could not be reached${g.note ? ` — ${esc(g.note)}` : ''}. They retry automatically.`
+      : (g.state === 'idle' && e.state === 'idle') ? 'Loading fire news…'
+      : `No fire news or reported incident in this region in the last ${S.filters.age} h.`;
+    parts.push(`<div class="empty">${why}</div>`);
+  }
+  el.innerHTML = parts.join('');
+}
+function renderAir(force) {
+  const el = $('#airList');
+  if (!el) return;
+  const list = airInView();
+  const key = [airKey() ? 1 : 0, AIR.state, AIR.note, list.length, AIR.okAt, AIR.sel, AIR.far, _cssCache.size].join('|');
+  if (!force && key === _airKey) return;
+  _airKey = key;
+  if (!airKey()) {
+    el.innerHTML = `<div class="empty">Live tracking of water bombers and firefighting aircraft needs a free
+      FlyItalyADSB key — the keyless flight feeds checked do not allow calls from a web page.<br><br>
+      <button class="btn sm" data-act="key">Add a key in Settings</button></div>`;
+    return;
+  }
+  if (AIR.state === 'down' && !list.length) {
+    el.innerHTML = `<div class="empty">Aircraft feed unavailable: ${esc(AIR.note)}.<br>
+      <button class="btn sm" data-act="key">Check the key</button></div>`;
+    return;
+  }
+  if (!list.length) {
+    el.innerHTML = `<div class="empty">${AIR.okAt ? `No water bombers or firefighting aircraft airborne in this region right now.${
+      AIR.far ? `<br><span class="muted">${AIR.far} dual-use aircraft (crop sprayers, freighters) are flying, but none within ${AIR_NEAR_KM} km of an active fire.</span>` : ''}`
+      : 'Looking for firefighting aircraft…'}</div>`;
+    return;
+  }
+  el.innerHTML = list.map(a => {
+    const { meta, name } = airDesc(a);
+    return `<div class="nrow${AIR.sel === a.hex ? ' sel' : ''}" data-lat="${a.lat}" data-lon="${a.lon}" data-hex="${esc(a.hex)}">
+      <div class="r1"><span class="chip air">${meta.heli ? 'HELI' : 'AIR'}</span><span class="ttl">${esc(name)}</span>
+        <span class="muted">${esc(meta.label)}</span></div>
+      <div class="r2"><span>${esc(meta.role)}</span>
+        <span>${a.ground ? 'on the ground' : a.alt == null ? '' : fmt(a.alt) + ' ft'}</span>
+        <span>${a.gs == null ? '' : fmt(a.gs) + ' kt'}</span>
+        <span>${isFinite(a.fireKm) ? `fire ${a.fireKm < 10 ? a.fireKm.toFixed(1) : fmt(a.fireKm)} km` : ''}</span>
+        <button class="linkbtn" data-act="map">show on map</button></div>
+    </div>`;
+  }).join('') + `<div class="empty" style="padding:10px 14px">Flight data: FlyItalyADSB (flyitalyadsb.com), CC BY-SA 4.0 ·
+    updated ${AIR.okAt ? relTime(AIR.okAt) : '—'}${AIR.note ? ' · ' + esc(AIR.note) : ''}</div>`;
+}
+function wireLayerLists() {
+  $('#newsList').addEventListener('click', ev => {
+    if (ev.target.closest('a')) return;                      // let headline links through
+    const act = ev.target.closest('[data-act]');
+    if (act && act.dataset.act === 'all') { NEWS.focus = null; NEWS.sel = null; renderNews(true); invalidateBase(); paint(); return; }
+    const row = ev.target.closest('.nrow');
+    if (!row || row.dataset.lat == null) return;
+    NEWS.sel = row.dataset.k || null;
+    centreOn(+row.dataset.lat, +row.dataset.lon, 40);
+    renderNews(true);
+  });
+  $('#airList').addEventListener('click', ev => {
+    const act = ev.target.closest('[data-act]');
+    if (act && act.dataset.act === 'key') { $('#btnSettings').click(); return; }
+    const row = ev.target.closest('.nrow');
+    if (!row || row.dataset.lat == null) return;
+    AIR.sel = row.dataset.hex;
+    centreOn(+row.dataset.lat, +row.dataset.lon, 60);
+    renderAir(true);
+  });
+  const ln = $('#lyrNews'), la = $('#lyrAir');
+  if (ln) ln.onchange = () => { NEWS.show = ln.checked; if (NEWS.show) tickLayers(); invalidateBase(); paint(); };
+  if (la) la.onchange = () => { AIR.show = la.checked; if (AIR.show) tickLayers(); invalidateBase(); paint(); };
+}
+function loadStoredKey() {
+  try { const k = localStorage.getItem(AIR_KEY_STORE); if (k) { S.cfg.adsbKey = k; S.cfg.adsbRemember = true; } }
+  catch { /* storage unavailable: the key just lasts for this tab */ }
+}
+function storeKey(key, remember) {
+  try {
+    if (remember && key) localStorage.setItem(AIR_KEY_STORE, key);
+    else localStorage.removeItem(AIR_KEY_STORE);
+  } catch { /* private mode or blocked storage */ }
+}
+function layerChips() {
+  const chips = [];
+  const st = (s, n) => s.state === 'ok' ? 'ok' : s.state === 'stale' ? 'stale' : s.state === 'idle' ? 'stale' : 'down';
+  const g = NEWS.gdelt, e = NEWS.eonet;
+  chips.push(`<span class="srcchip ${st(e)}" title="${esc(e.note || 'Open wildfires reported by agencies, via NASA EONET')}">
+    <span class="dot"></span><b>Incidents</b><span>${fmt(NEWS.incidents.length)}</span>
+    <span class="age">${e.okAt ? relTime(e.okAt) : e.state === 'idle' ? 'loading' : 'unreachable'}</span></span>`);
+  chips.push(`<span class="srcchip ${st(g)}" title="${esc(g.note || 'Fire news worldwide, via the GDELT Project')}">
+    <span class="dot"></span><b>News</b><span>${fmt(NEWS.articles.length)}</span>
+    <span class="age">${g.okAt ? relTime(g.okAt) : g.state === 'idle' ? 'loading' : g.state === 'down' && /rate/.test(g.note) ? 'rate-limited' : 'unreachable'}</span></span>`);
+  chips.push(airKey()
+    ? `<span class="srcchip ${AIR.state === 'ok' ? 'ok' : AIR.state === 'down' ? 'down' : 'stale'}" title="${esc(AIR.note || 'Firefighting aircraft, via FlyItalyADSB (CC BY-SA 4.0)')}">
+        <span class="dot"></span><b>Aircraft</b><span>${fmt(airInView().length)}</span>
+        <span class="age">${AIR.okAt ? relTime(AIR.okAt) : AIR.state === 'down' ? 'unavailable' : 'loading'}</span></span>`
+    : `<span class="srcchip off" title="Add a free FlyItalyADSB key in Settings to track water bombers"><span class="dot"></span><b>Aircraft</b><span class="age">needs key</span></span>`);
+  return chips.join('');
+}
+
+function paintGeom(fast) {
+  if (V.proj === 'globe') return paintGeomGlobe(fast);
   const g = geomCtx, W = V.W, H = V.H, P = palette();
   // No clearRect: the fill below is opaque and covers the whole canvas, so
   // clearing first is a second full-canvas pass for nothing.
@@ -5828,8 +7140,9 @@ function paintGeom() {
    ----------------------------------------------------------------- */
 function paintBase() {
   const g = baseCtx, W = V.W, H = V.H, P = palette();
-  const gkey = [V.lon0, V.lat0, V.k, W, H, V.dpr, P.land, P.edge, P.surface3, P.grid].join('|');
-  if (gkey !== geomKey) { paintGeom(); geomKey = gkey; }
+  const globe = V.proj === 'globe', fast = globe && interacting;
+  const gkey = [V.proj, fast ? 1 : 0, V.lon0, V.lat0, V.k, W, H, V.dpr, P.land, P.edge, P.surface3, P.grid].join('|');
+  if (gkey !== geomKey) { paintGeom(fast); geomKey = gkey; }
   g.drawImage(geomCv, 0, 0, W, H);
   const offs = worldOffsets();
 
@@ -5837,7 +7150,8 @@ function paintBase() {
   const b = S.filters.bbox;
   if (b && !(b[0] <= -179.9 && b[2] >= 179.9)) {
     g.save(); g.setLineDash([5, 4]); g.lineWidth = 1.5; g.strokeStyle = P.muted;
-    for (const o of offs) g.strokeRect(px(b[0]) + o, py(b[3]), (b[2] - b[0]) * V.k, (b[3] - b[1]) * V.k);
+    if (globe) strokeBoxGlobe(g, b);
+    else for (const o of offs) g.strokeRect(px(b[0]) + o, py(b[3]), (b[2] - b[0]) * V.k, (b[3] - b[1]) * V.k);
     g.restore();
   }
 
@@ -5856,7 +7170,7 @@ function paintBase() {
   // Thinning drops co-located marks. That is right when a hundred detections
   // share a pixel, and wrong when the zoom is high enough that they are
   // genuinely distinct ground cells, so the cell shrinks to 1 px there.
-  const fpScale = V.k > 300 ? 1 : 0;
+  const fpScale = V.k > 300 && !globe ? 1 : 0;   // ground footprints are a flat-map detail
   const CELL = V.k > 2000 ? 1 : V.k > 300 ? 2 : 3;
   const gw = Math.ceil(W / CELL) + 2, gh = Math.ceil(H / CELL) + 2;
   if (!paintBase._grid || paintBase._grid.length < gw * gh) paintBase._grid = new Uint8Array(gw * gh);
@@ -5864,10 +7178,20 @@ function paintBase() {
   const groups = new Map();                       // "shape|bucket|fade" -> [{x,y,r}]
   HIT = [];
 
-  const latHi = uny(-30), latLo = uny(H + 30);
+  const latHi = globe ? 90 : uny(-30), latLo = globe ? -90 : uny(H + 30);
   let source;
-  if (IDX_OVERVIEW_DEG * V.k < 3) {
+  if (IDX_OVERVIEW_DEG * V.k < 3 || fast) {
     source = idx.overview;                        // zoomed out: the detail is sub-pixel
+  } else if (globe) {
+    // Buckets whose 5° box reaches the visible cap — the globe's viewport.
+    globeCullSetup();
+    const parts = [], bb = [0, 0, 0, 0];
+    for (const [key, arr] of idx.buckets) {
+      const la = Math.floor(key / 128) - 18, lo = key % 128;
+      bb[0] = lo * IDX_DEG; bb[1] = la * IDX_DEG; bb[2] = bb[0] + IDX_DEG; bb[3] = bb[1] + IDX_DEG;
+      if (boxOnGlobe(bb)) parts.push(arr);
+    }
+    source = parts.length === 1 ? parts[0] : [].concat(...parts);
   } else {
     const la0 = Math.floor(latLo / IDX_DEG), la1 = Math.floor(latHi / IDX_DEG);
     const lo0 = Math.floor(unx(-30) / IDX_DEG), lo1 = Math.floor(unx(W + 30) / IDX_DEG);
@@ -5882,11 +7206,12 @@ function paintBase() {
 
   for (const d of source) {
     if (d.lat < latLo || d.lat > latHi) continue;
-    const yy = py(d.lat);
-    const x0 = px(d.lon);
+    let yy, x0;
+    if (globe) { if (!pt(d.lon, d.lat)) continue; x0 = PT.x; yy = PT.y; }
+    else { yy = py(d.lat); x0 = px(d.lon); }
     for (const o of offs) {
       const x = x0 + o;
-      if (x < -20 || x > W + 20) continue;
+      if (x < -20 || x > W + 20 || yy < -20 || yy > H + 20) continue;
       const gi = ((x / CELL) | 0) + 1, gj = ((yy / CELL) | 0) + 1;
       if (gi < 0 || gj < 0 || gi >= gw || gj >= gh) continue;
       const cellIx = gj * gw + gi;
@@ -5937,9 +7262,12 @@ function paintBase() {
   }
   g.globalAlpha = 1;
 
-  drawPerimeters(g, W, H);
-  drawFireOutlines(g, W, H, offs);
-  drawPlaceLabels(g, W, H);
+  if (!fast) {                                    // mid-rotation the globe draws only what moves the eye
+    drawPerimeters(g, W, H);
+    drawFireOutlines(g, W, H, offs);
+    drawPlaceLabels(g, W, H);
+  }
+  drawOverlays(g, W, H, offs);                    // news pins, reported incidents, aircraft
   baseDirty = false;
   baseView = { lon0: V.lon0, lat0: V.lat0, k: V.k, W, H };
 }
@@ -5961,16 +7289,19 @@ function drawPerimeters(g, W, H) {
     for (const ring of per.rings) {
       if (ring.length < 3) continue;
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      let hidden = false;
       for (const [lon, lat] of ring) {
-        const x = px(lon), y = py(lat);
+        if (!pt(lon, lat)) { hidden = true; break; }
+        const x = PT.x, y = PT.y;
         if (x < x0) x0 = x; if (x > x1) x1 = x;
         if (y < y0) y0 = y; if (y > y1) y1 = y;
       }
+      if (hidden) continue;
       if (x1 < -20 || x0 > W + 20 || y1 < -20 || y0 > H + 20) continue;
       if (Math.max(x1 - x0, y1 - y0) < 4) continue;
       g.beginPath();
-      g.moveTo(px(ring[0][0]), py(ring[0][1]));
-      for (let i = 1; i < ring.length; i++) g.lineTo(px(ring[i][0]), py(ring[i][1]));
+      pt(ring[0][0], ring[0][1]); g.moveTo(PT.x, PT.y);
+      for (let i = 1; i < ring.length; i++) { pt(ring[i][0], ring[i][1]); g.lineTo(PT.x, PT.y); }
       g.closePath();
       g.globalAlpha = .12; g.fill();
       g.globalAlpha = .75; g.stroke();
@@ -6000,17 +7331,20 @@ function drawFireOutlines(g, W, H, offs) {
     const h = inc.hull;
     if (!h || h.length < 3) continue;
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    let hidden = false;
     for (const q of h) {
-      const x = px(q[0]), y = py(q[1]);
+      if (!pt(q[0], q[1])) { hidden = true; break; }
+      const x = PT.x, y = PT.y;
       if (x < x0) x0 = x; if (x > x1) x1 = x;
       if (y < y0) y0 = y; if (y > y1) y1 = y;
     }
+    if (hidden) continue;
     if (Math.max(x1 - x0, y1 - y0) < 26) continue;          // too small to read
     if (x1 < -40 || x0 > W + 40 || y1 < -40 || y0 > H + 40) continue;
     g.globalAlpha = .55;
     g.beginPath();
-    g.moveTo(px(h[0][0]), py(h[0][1]));
-    for (let i = 1; i < h.length; i++) g.lineTo(px(h[i][0]), py(h[i][1]));
+    pt(h[0][0], h[0][1]); g.moveTo(PT.x, PT.y);
+    for (let i = 1; i < h.length; i++) { pt(h[i][0], h[i][1]); g.lineTo(PT.x, PT.y); }
     g.closePath();
     g.stroke();
     if (x1 - x0 > 80) {
@@ -6070,7 +7404,8 @@ function drawPlaceLabels(g, W, H) {
     return s;
   };
   const draw = (name, lat, lon, danger) => {
-    const x = px(lon), y = py(lat);
+    if (!pt(lon, lat)) return;
+    const x = PT.x, y = PT.y;
     if (x < 4 || x > W - 4 || y < 8 || y > H - 8) return;
     const w = g.measureText(name).width;
     if (!fits(x + 7, y - 7, w + 6, 14)) return;
@@ -6090,7 +7425,8 @@ function drawPlaceLabels(g, W, H) {
   const areaLabel = (f, water) => {
     const spanPx = f.span / 111.32 * V.k;
     if (spanPx < 52 || spanPx > 9 * W) return;
-    const x = px(f.lon), y = py(f.lat);
+    if (!pt(f.lon, f.lat)) return;
+    const x = PT.x, y = PT.y;
     if (x < 30 || x > W - 30 || y < 12 || y > H - 12) return;
     const size = clamp(10.5 + Math.log2(spanPx / 52) * 1.6, 10.5, 16);
     g.font = `${water ? 'italic ' : ''}600 ${size.toFixed(1)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
@@ -6111,10 +7447,13 @@ function drawPlaceLabels(g, W, H) {
 
   for (const r of (S.risk || []).slice(0, 40)) draw(r.name, r.lat, r.lon, true);
 
-  if (V.k > 10) {                                    // roughly a continent or tighter
+  // On the globe the window is the visible cap, and only once it is tight
+  // enough that town names are information rather than wallpaper.
+  const win = V.proj === 'globe' ? globeWindow(25) : [unx(0), uny(H), unx(W), uny(0)];
+  if (V.k > 10 && win) {                             // roughly a continent or tighter
     // Walk the gazetteer's own 1° cells across the viewport rather than the
     // whole 17 849-entry table: at this zoom that is a few dozen cells.
-    const latHi = uny(0), latLo = uny(H), lonLo = unx(0), lonHi = unx(W);
+    const [lonLo, latLo, lonHi, latHi] = win;
     const inView = [];
     for (let la = Math.floor(latLo); la <= Math.floor(latHi); la++) {
       for (let lo = Math.floor(lonLo); lo <= Math.floor(lonHi); lo++) {
@@ -6123,6 +7462,7 @@ function drawPlaceLabels(g, W, H) {
         for (let n = 0; n < arr.length; n++) {
           const i = arr[n];
           if (CITY.lat[i] < latLo || CITY.lat[i] > latHi) continue;
+          if (V.proj === 'globe' && (!pt(CITY.lon[i], CITY.lat[i]) || PT.x < 4 || PT.x > W - 4 || PT.y < 8 || PT.y > H - 8)) continue;
           inView.push(i);
         }
       }
@@ -6143,11 +7483,14 @@ function drawPlaceLabels(g, W, H) {
 function paint() {
   if (!V.W) return;
   const W = V.W, H = V.H, P = palette();
-  if (baseDirty && !(interacting && baseView)) paintBase();
+  const globe = V.proj === 'globe';
+  // A rotating globe is not an affine image of the previous frame, so it is
+  // redrawn every frame (at a coarser level of detail while it moves).
+  if (baseDirty && (globe || !(interacting && baseView))) paintBase();
   // Both branches below cover the canvas with opaque paint, so clearing first
   // would be a wasted full-canvas pass on every animation frame.
 
-  if (baseDirty && baseView) {
+  if (baseDirty && baseView && !globe) {
     /* Mid-gesture. Plate carrée is a pure affine map, so the previous base
        layer can simply be translated and scaled into place — one drawImage
        instead of re-projecting every coastline and every hot pixel. The real
@@ -6169,9 +7512,10 @@ function paint() {
   if (S.newIds && S.newIds.size) {
     ctx.strokeStyle = P.critical;
     for (const d of S.newDets) {
-      const yy = py(d.lat);
+      let yy, x0;
+      if (globe) { if (!pt(d.lon, d.lat)) continue; x0 = PT.x; yy = PT.y; }
+      else { yy = py(d.lat); x0 = px(d.lon); }
       if (yy < -30 || yy > H + 30) continue;
-      const x0 = px(d.lon);
       const r = frpRadius(d.frp, base);
       for (const o of offs) {
         const x = x0 + o;
@@ -6187,8 +7531,8 @@ function paint() {
     ctx.globalAlpha = 1;
   }
 
-  if (S.selected) {
-    const x = px(S.selected.lon), y = py(S.selected.lat);
+  if (S.selected && pt(S.selected.lon, S.selected.lat)) {
+    const x = PT.x, y = PT.y;
     ctx.strokeStyle = P.series1; ctx.lineWidth = 2; ctx.globalAlpha = .95;
     ctx.beginPath();
     ctx.arc(x, y, 11, 0, 6.2832);
@@ -6213,7 +7557,8 @@ function paint() {
 /* Scale bar — at plate carrée the east–west scale varies with latitude, so
    it is computed for the latitude at the centre of the viewport. */
 function drawScaleBar() {
-  const kmPerPx = 111.32 * Math.cos(V.lat0 * Math.PI / 180) / V.k;
+  // At the centre of an orthographic globe the scale is true in every direction.
+  const kmPerPx = (V.proj === 'globe' ? 111.32 : 111.32 * Math.cos(V.lat0 * Math.PI / 180)) / V.k;
   const target = 120 * kmPerPx;
   const mag = Math.pow(10, Math.floor(Math.log10(Math.max(target, 1e-3))));
   const km = [1, 2, 5, 10].map(m => m * mag).find(v => v >= target) || mag * 10;
@@ -6248,7 +7593,10 @@ cv.addEventListener('pointermove', e => {
   if (dragBox) { dragBox.x1 = x; dragBox.y1 = y; schedulePaint(); return; }
   if (ptr) {
     ptr.moved += Math.abs(x - ptr.x) + Math.abs(y - ptr.y);
-    V.lon0 = ptr.lon0 - (x - ptr.x) / V.k;
+    // On the globe a horizontal drag turns it about the pole; dividing by
+    // cos(latitude) keeps the ground under the pointer at higher latitudes.
+    const cosl = V.proj === 'globe' ? Math.max(0.25, Math.cos(V.lat0 * DEG)) : 1;
+    V.lon0 = ptr.lon0 - (x - ptr.x) / V.k / cosl;
     V.lat0 = ptr.lat0 + (y - ptr.y) / V.k;
     clampView(); schedulePaint(); hideTip(); return;
   }
@@ -6256,10 +7604,13 @@ cv.addEventListener('pointermove', e => {
 });
 function endPtr(e) {
   if (dragBox) {
-    const b = [unx(Math.min(dragBox.x0, dragBox.x1)), uny(Math.max(dragBox.y0, dragBox.y1)),
-               unx(Math.max(dragBox.x0, dragBox.x1)), uny(Math.min(dragBox.y0, dragBox.y1))];
+    const xs = [dragBox.x0, dragBox.x1], ys = [dragBox.y0, dragBox.y1];
+    const cs = [unproj(xs[0], ys[0]), unproj(xs[1], ys[0]), unproj(xs[0], ys[1]), unproj(xs[1], ys[1])];
     dragBox = null;
-    if (Math.abs(b[2] - b[0]) > .2 && Math.abs(b[3] - b[1]) > .2) {
+    const okBox = cs.every(Boolean);
+    const b = okBox ? [Math.min(...cs.map(c => c[0])), Math.min(...cs.map(c => c[1])),
+                       Math.max(...cs.map(c => c[0])), Math.max(...cs.map(c => c[1]))] : null;
+    if (b && Math.abs(b[2] - b[0]) > .2 && Math.abs(b[3] - b[1]) > .2) {
       S.filters.bbox = b.map(v => +v.toFixed(3));
       S.filters.region = 'custom';
       $('#fRegion').value = 'custom';
@@ -6284,16 +7635,31 @@ cv.addEventListener('wheel', e => {
   e.preventDefault();
   beginInteract();
   const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-  const lon = unx(x), lat = uny(y);
-  V.k *= Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0016));
-  clampView();
-  V.lon0 += lon - unx(x); V.lat0 += lat - uny(y);
+  const f = Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0016));
+  if (V.proj === 'globe') {
+    // Zoom toward the pointer: move the centre along the great circle to the
+    // point under it, by the fraction the scale changed.
+    const p = unproj(x, y), k0 = V.k;
+    V.k *= f; clampView();
+    if (p && V.k !== k0) { const c = gcLerp([V.lon0, V.lat0], p, 1 - k0 / V.k); V.lon0 = c[0]; V.lat0 = c[1]; }
+  } else {
+    const lon = unx(x), lat = uny(y);
+    V.k *= f;
+    clampView();
+    V.lon0 += lon - unx(x); V.lat0 += lat - uny(y);
+  }
   clampView(); schedulePaint(); hideTip();
   endInteract(140);
 }, { passive: false });
 
 cv.addEventListener('dblclick', e => {
   const r = cv.getBoundingClientRect();
+  if (V.proj === 'globe') {
+    const p = unproj(e.clientX - r.left, e.clientY - r.top);
+    if (p) { V.lon0 = p[0]; V.lat0 = p[1]; }
+    V.k *= 1.9; clampView(); schedulePaint();
+    return;
+  }
   const lon = unx(e.clientX - r.left), lat = uny(e.clientY - r.top);
   V.k *= 1.9; clampView();
   V.lon0 += lon - unx(e.clientX - r.left); V.lat0 += lat - uny(e.clientY - r.top);
@@ -6321,7 +7687,12 @@ cv.addEventListener('touchend', () => { if (pinch) endInteract(0); pinch = null;
 function zoomBy(f) { V.k *= f; clampView(); schedulePaint(); }
 $('#zIn').onclick  = () => zoomBy(1.6);
 $('#zOut').onclick = () => zoomBy(1 / 1.6);
-$('#zHome').onclick = () => { V.k = V.W / 360; V.lon0 = 12; V.lat0 = 22; clampView(); paint(); };
+$('#zHome').onclick = () => {
+  if (V.proj === 'globe') { V.k = 0; V.lon0 = 15; V.lat0 = 25; }
+  else { V.k = V.W / 360; V.lon0 = 12; V.lat0 = 22; }
+  clampView(); paint();
+};
+$('#zGlobe').onclick = () => setProjection(V.proj === 'globe' ? 'flat' : 'globe');
 $('#zFit').onclick = () => {
   const d = visibleDetections();
   if (!d.length) return;
@@ -6351,7 +7722,9 @@ function hover(x, y, cx, cy) {
   if (now - hoverThrottle < 24) return;           // hit-testing on every move event is wasteful
   hoverThrottle = now;
   const co = $('#mapCoord');
-  if (co) co.textContent = coordText(clamp(uny(y), -90, 90), ((unx(x) + 180) % 360 + 360) % 360 - 180);
+  if (co) { const p = unproj(x, y); co.textContent = p ? coordText(p[1], p[0]) : ''; }
+  const o = nearestOverlay(x, y);
+  if (o) { cv.style.cursor = 'pointer'; showOverlayTip(o, cx, cy); return; }
   const h = nearest(x, y);
   if (!h) { hideTip(); cv.style.cursor = 'grab'; return; }
   cv.style.cursor = 'pointer';
@@ -6381,9 +7754,12 @@ function hover(x, y, cx, cy) {
 }
 
 function pick(x, y) {
+  const o = nearestOverlay(x, y);
+  if (o) { const r = cv.getBoundingClientRect(); selectOverlay(o, x + r.left, y + r.top); return; }
   const h = nearest(x, y);
-  const lat = h ? h.d.lat : uny(y), lon = h ? h.d.lon : unx(x);
-  selectPoint(lat, lon, h ? `${SOURCES[h.d.source].label} hot pixel` : 'Map point');
+  const p = h ? [h.d.lon, h.d.lat] : unproj(x, y);
+  if (!p) return;                                  // a click in space beside the globe
+  selectPoint(p[1], p[0], h ? `${SOURCES[h.d.source].label} hot pixel` : 'Map point');
 }
 
 let roTimer = 0;
@@ -7117,7 +8493,7 @@ function renderSourceStrip() {
   }
   if (S.perimeters && S.perimeters.length)
     chips.push(`<span class="srcchip ok"><span class="dot"></span><b>EFFIS burnt areas</b><span>${fmt(S.perimeters.length)}</span></span>`);
-  el.innerHTML = chips.join('');
+  el.innerHTML = chips.join('') + layerChips();
 }
 
 function modeLabel() {
@@ -7190,6 +8566,7 @@ function render() {
 
   renderFeed(); renderRisk(); renderIncidents(); renderSideNote(); renderTable(); renderSourceStrip();
   drawRate(); drawTemp(); paint(); tickClock();
+  renderLayers();
 }
 
 let _feedKey = '';
@@ -7334,16 +8711,24 @@ $('#risk').addEventListener('click', ev => {
 
 function renderSideNote() {
   const risk = S.risk || [];
-  $('#sideNote').textContent = S.sideTab === 'risk'
+  const t = S.sideTab;
+  $('#sideNote').textContent = t === 'risk'
     ? (CITY.ready ? `${risk.length} within ${S.filters.radius} km` : '')
+    : t === 'news' ? (() => { const v = newsInView(); return `${v.incs.length} incidents · ${v.arts.length} articles`; })()
+    : t === 'air' ? (airKey() ? `${airInView().length} airborne` : 'needs key')
     : `${S.incidents.length} cluster${S.incidents.length === 1 ? '' : 's'}`;
 }
 function setSideTab(t) {
   S.sideTab = t;
   $('#risk').hidden = t !== 'risk';
   $('#incidents').hidden = t !== 'inc';
+  $('#newsList').hidden = t !== 'news';
+  $('#airList').hidden = t !== 'air';
   $('#tabRisk').setAttribute('aria-pressed', t === 'risk');
   $('#tabInc').setAttribute('aria-pressed', t === 'inc');
+  $('#tabNews').setAttribute('aria-pressed', t === 'news');
+  $('#tabAir').setAttribute('aria-pressed', t === 'air');
+  if (t === 'news' || t === 'air') renderLayers(true);
   renderSideNote();
 }
 
@@ -7505,6 +8890,8 @@ $('#fAge').onchange    = e => { S.filters.age = +e.target.value; refreshAll(true
 $('#fRadius').onchange = e => { S.filters.radius = +e.target.value; refreshAll(false); };
 $('#tabRisk').onclick  = () => setSideTab('risk');
 $('#tabInc').onclick   = () => setSideTab('inc');
+$('#tabNews').onclick  = () => setSideTab('news');
+$('#tabAir').onclick   = () => setSideTab('air');
 $('#fFrp').oninput     = e => {
   S.filters.frp = +e.target.value;
   $('#fFrpVal').textContent = `${e.target.value} MW`;
@@ -7602,6 +8989,8 @@ $('#btnSettings').onclick = () => {
   $('#kInterval').value = String(S.cfg.interval);
   $('#kThresh').value = String(S.cfg.thresh);
   $('#kWatchOnly').checked = S.cfg.watchOnly;
+  $('#kAdsb').value = S.cfg.adsbKey || '';
+  $('#kAdsbRemember').checked = !!S.cfg.adsbRemember;
   dlg.showModal();
 };
 $('#dlgClose').onclick = () => dlg.close();
@@ -7610,6 +8999,11 @@ $('#dlgSave').onclick = () => {
   S.cfg.interval = +$('#kInterval').value;
   S.cfg.thresh = +$('#kThresh').value;
   S.cfg.watchOnly = $('#kWatchOnly').checked;
+  const adsb = $('#kAdsb').value.trim(), keyChanged = adsb !== (S.cfg.adsbKey || '');
+  S.cfg.adsbKey = adsb;
+  S.cfg.adsbRemember = $('#kAdsbRemember').checked;
+  storeKey(adsb, S.cfg.adsbRemember);
+  if (keyChanged) { AIR.tryAt = 0; AIR.all = []; AIR.list = []; AIR.state = adsb ? 'idle' : 'off'; tickLayers(); layersChanged(); }
   dlg.close();
   S.nextPoll = S.cfg.interval ? Date.now() + S.cfg.interval * 1000 : 0;
   if (S.cfg.firmsKey && S.mode !== 'server')
@@ -7647,6 +9041,7 @@ setInterval(() => {
   if (S.nextPoll && Date.now() >= S.nextPoll && !S.polling) poll();
   if (S.events.length) ageFeed();
   if (S.srcStatus.length) renderSourceStrip();
+  tickLayers();
 }, 1000);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) return;
@@ -7658,10 +9053,13 @@ document.addEventListener('visibilitychange', () => {
    tests assert against. */
 Object.assign(window, { S, V, SOURCES, REGIONS, CITY, NAMED, initCities, initNamedPlaces, nearestCity, computeRisk,
   searchCity, placeLabel, renderRisk, setSideTab, visibleDetections, updateIncidents,
-  focusIncident, selectPoint, paint, poll, render, drawRate, drawTemp });
+  focusIncident, selectPoint, paint, poll, render, drawRate, drawTemp,
+  NEWS, AIR, GLOBE, setProjection, pt, unproj, locateTitle, tickLayers, airInView, newsInView });
 
 /* ---------------- boot ---------------- */
 function boot() {
+  loadStoredKey();
+  wireLayerLists();
   initNamedPlaces();          // small, and the very first paint wants it
   initRegions();
   renderLegend();
@@ -7684,6 +9082,7 @@ function boot() {
     try {
       initCities();
       if (S.incidents.length) { PLACE_CACHE.clear(); updateIncidents(); }
+      geocodeNews();
       render();
       announce(`Place names ready: ${fmt(CITY.n)} populated places loaded.`);
     } catch (err) { console.warn('gazetteer unavailable:', err); }
